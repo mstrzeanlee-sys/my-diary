@@ -1,29 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><link rel="manifest" href="manifest.json">
-    
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-      }
-    </script><link rel="manifest" href="manifest.json">
-    
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-      }
-    </script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Echo 日记、树洞 & 好友私聊</title>
     
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js');
@@ -44,11 +29,6 @@
             border-bottom: 1px solid #bfdbfe; position: sticky; top: 0; z-index: 100;
         }
         .user-actions { display: flex; gap: 8px; }
-        .change-pwd-btn {
-            width: auto; padding: 6px 12px; background: #64748b; font-size: 13px;
-            border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
-        }
-        .change-pwd-btn:hover { background: #475569; }
         .logout-btn { 
             width: auto; padding: 6px 14px; background: #ef4444; font-size: 13px; 
             border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
@@ -89,6 +69,7 @@
         .treehole-title { color: #6366f1; }
         .friend-title { color: #ec4899; margin-top: 20px; }
         .chat-title { color: #8b5cf6; }
+        .profile-title { color: #14b8a6; }
 
         textarea { 
             width: 100%; height: 110px; margin: 8px 0; border: 1px solid #e2e8f0; 
@@ -108,6 +89,11 @@
         .save-btn { background: #3ecf8e; }
         .whisper-btn { background: #6366f1; }
         .friend-btn { background: #ec4899; margin-top: 12px; }
+        .profile-btn { background: #14b8a6; margin-top: 12px; }
+
+        /* 头像样式 */
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e2e8f0; }
+        .avatar-large { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #e2e8f0; margin-bottom: 10px; border: 2px solid #cbd5e1; }
 
         /* 日记列表样式 */
         .diary-item { 
@@ -115,11 +101,12 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); position: relative;
         }
         .diary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .diary-user-info { display: flex; align-items: center; gap: 10px; }
         .diary-time { font-size: 12px; color: #94a3b8; }
-        .diary-author { font-size: 12px; color: #3b82f6; font-weight: bold; background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+        .diary-author { font-size: 14px; color: #1e293b; font-weight: bold; }
         .private-badge { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 20px; width: auto; padding: 0 5px; }
-        .diary-text { font-size: 15px; color: #334155; word-break: break-all; line-height: 1.5; }
+        .diary-text { font-size: 15px; color: #334155; word-break: break-all; line-height: 1.5; margin-top: 6px; }
         .diary-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; }
 
         .diary-footer {
@@ -155,9 +142,9 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #94a3b8; font-size: 11px; font-weight: 500; cursor: pointer; width: 25%; height: 100%;
+            color: #94a3b8; font-size: 11px; font-weight: 500; cursor: pointer; width: 20%; height: 100%;
         }
-        .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
+        .nav-item .icon { font-size: 18px; margin-bottom: 2px; }
         .nav-item.active { color: #3b82f6; font-weight: bold; }
 
         /* 💻 电脑端自适应布局样式 */
@@ -190,9 +177,11 @@
 <div id="mainContent">
     
     <div class="top-status">
-        <div>👤 用户：<span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <img id="topAvatar" class="avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="avatar">
+            <div>👤 <span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
+        </div>
         <div class="user-actions">
-            <button class="change-pwd-btn" onclick="changeUserPassword()">修改密码</button>
             <button class="logout-btn" onclick="logout()">登出</button>
         </div>
     </div>
@@ -231,6 +220,26 @@
                         <label for="privateCheckboxPC">🔒 仅自己可见</label>
                     </div>
                     <button class="save-btn" onclick="saveToCloud('PC')">发布到云端</button>
+                </div>
+
+                <div class="card">
+                    <h2 class="profile-title">🪪 我的个人资料</h2>
+                    <div style="display: flex; flex-direction: column; align-items: center; background: #f1f5f9; padding: 14px; border-radius: 12px; margin-bottom: 12px; font-size: 14px;">
+                        <img id="profileAvatarPC" class="avatar-large" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default">
+                        <div><strong>用户名：</strong> <span id="profileUserPC"></span></div>
+                    </div>
+                    
+                    <label style="font-size: 14px; font-weight: bold; color: #64748b;">📤 上传新头像：</label>
+                    <input type="file" id="avatarFileInputPC" accept="image/*" style="margin-top: 6px; margin-bottom: 14px;">
+                    
+                    <label style="font-size: 14px; font-weight: bold; color: #64748b;">个性签名：</label>
+                    <textarea id="bioInputPC" style="height: 60px; margin-top: 6px;" placeholder="写一段个性的签名吧..."></textarea>
+                    <button class="profile-btn" onclick="updateProfile('PC')">更新个人资料</button>
+                    
+                    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+                    <label style="font-size: 14px; font-weight: bold; color: #64748b;">修改新密码：</label>
+                    <input type="password" id="newPwdInputPC" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 6px; box-sizing: border-box;" placeholder="输入新密码">
+                    <button style="background: #64748b; margin-top: 12px;" onclick="changePassword('PC')">修改密码</button>
                 </div>
 
                 <div class="card">
@@ -302,6 +311,30 @@
                 </div>
             </div>
         </div>
+
+        <div id="pageProfile" class="page">
+            <div class="card">
+                <h2 class="profile-title">🪪 我的个人资料</h2>
+                <div style="display: flex; flex-direction: column; align-items: center; background: #f1f5f9; padding: 16px; border-radius: 12px; margin-bottom: 16px; font-size: 15px;">
+                    <img id="profileAvatarMobile" class="avatar-large" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default">
+                    <div><strong>用户名：</strong> <span id="profileUserMobile"></span></div>
+                </div>
+                
+                <label style="font-size: 14px; font-weight: bold; color: #64748b;">📤 上传新头像：</label>
+                <input type="file" id="avatarFileInputMobile" accept="image/*" style="margin-top: 6px; margin-bottom: 14px;">
+
+                <label style="font-size: 14px; font-weight: bold; color: #64748b;">个性签名：</label>
+                <textarea id="bioInputMobile" style="height: 70px; margin-top: 6px;" placeholder="写一段个性的签名吧..."></textarea>
+                <button class="profile-btn" onclick="updateProfile('Mobile')">保存资料</button>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid #e2e8f0;">
+                
+                <label style="font-size: 14px; font-weight: bold; color: #64748b;">修改新密码：</label>
+                <input type="password" id="newPwdInputMobile" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 6px; box-sizing: border-box;" placeholder="输入新密码">
+                <button style="background: #64748b; margin-top: 12px;" onclick="changePassword('Mobile')">修改密码</button>
+            </div>
+        </div>
+
     </div>
 
     <div class="bottom-nav">
@@ -316,6 +349,9 @@
         </div>
         <div class="nav-item" id="btnNavTreehole" onclick="switchTab('treehole')">
             <span class="icon">🍃</span><span>树洞</span>
+        </div>
+        <div class="nav-item" id="btnNavProfile" onclick="switchTab('profile')">
+            <span class="icon">🪪</span><span>资料</span>
         </div>
     </div>
 </div>
@@ -337,8 +373,13 @@
             document.getElementById('mainContent').style.display = 'block';
             document.querySelector('.top-status').style.display = 'flex';
             document.getElementById('currentUserDisplay').innerText = currentUsername;
+            
+            document.getElementById('profileUserPC').innerText = currentUsername;
+            document.getElementById('profileUserMobile').innerText = currentUsername;
+
             fetchDiaries();
             fetchFriends();
+            fetchProfile();
         } else {
             document.getElementById('pageAuth').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'none';
@@ -347,7 +388,6 @@
         }
     }
 
-    // 💡 处理登录/自主注册逻辑
     async function handleAuth() {
         const user = document.getElementById('usernameInput').value.trim();
         const pass = document.getElementById('passwordInput').value.trim();
@@ -360,7 +400,6 @@
             if (error) throw error;
 
             if (existUser) {
-                // 已有用户，核对密码
                 if (existUser.password === pass) {
                     alert(`🎉 登录成功！欢迎回来，${user}。`);
                     completeLogin(user);
@@ -368,7 +407,6 @@
                     alert('❌ 密码错误，请重试！');
                 }
             } else {
-                // 没有该用户，以输入的密码进行注册
                 const { error: insertErr } = await mySupabase
                     .from('users').insert([{ username: user, password: pass }]);
 
@@ -381,23 +419,76 @@
         }
     }
 
-    // 💡 用户在登录状态下自行修改密码
-    async function changeUserPassword() {
-        const newPassword = prompt('请输入你要设置的新密码：');
-        if (!newPassword) return;
-        if (newPassword.trim() === '') return alert('新密码不能为空！');
+    async function fetchProfile() {
+        if (!currentUsername) return;
+        const { data } = await mySupabase.from('users').select('bio, avatar_url').eq('username', currentUsername).maybeSingle();
+        if (data) {
+            if (data.bio) {
+                document.getElementById('bioInputPC').value = data.bio;
+                document.getElementById('bioInputMobile').value = data.bio;
+            }
+            if (data.avatar_url) {
+                document.getElementById('topAvatar').src = data.avatar_url;
+                document.getElementById('profileAvatarPC').src = data.avatar_url;
+                document.getElementById('profileAvatarMobile').src = data.avatar_url;
+            }
+        }
+    }
+
+    // 💡 更新个人资料 & 上传本地头像
+    async function updateProfile(type) {
+        if (!currentUsername) return;
+        const bioInputId = type === 'PC' ? 'bioInputPC' : 'bioInputMobile';
+        const fileInputId = type === 'PC' ? 'avatarFileInputPC' : 'avatarFileInputMobile';
+        
+        const newBio = document.getElementById(bioInputId).value.trim();
+        const fileInput = document.getElementById(fileInputId);
+        
+        try {
+            let avatarUrl = null;
+
+            // 检查是否有本地头像文件要上传
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const fileName = `${currentUsername}-${Date.now()}.${file.name.split('.').pop()}`;
+                
+                // 上传文件到 avatars 存储桶
+                const { error: uploadError } = await mySupabase.storage.from('avatars').upload(fileName, file);
+                if (uploadError) throw uploadError;
+                
+                // 获取公开下载链接
+                const { data: urlData } = mySupabase.storage.from('avatars').getPublicUrl(fileName);
+                avatarUrl = urlData.publicUrl;
+            }
+
+            // 更新到数据库
+            let updateData = { bio: newBio };
+            if (avatarUrl) {
+                updateData.avatar_url = avatarUrl;
+            }
+
+            const { error: updateError } = await mySupabase.from('users').update(updateData).eq('username', currentUsername);
+            if (updateError) throw updateError;
+            
+            alert('🎉 个人资料已成功保存！');
+            fileInput.value = ''; // 清空选择的文件
+            fetchProfile();
+            fetchDiaries(); 
+        } catch (err) { alert('更新失败：' + err.message); }
+    }
+
+    async function changePassword(type) {
+        if (!currentUsername) return;
+        const inputId = type === 'PC' ? 'newPwdInputPC' : 'newPwdInputMobile';
+        const newPwd = document.getElementById(inputId).value.trim();
+        if (!newPwd) return alert('请输入新密码！');
 
         try {
-            const { error } = await mySupabase
-                .from('users')
-                .update({ password: newPassword.trim() })
-                .eq('username', currentUsername);
-
+            const { error } = await mySupabase.from('users').update({ password: newPwd }).eq('username', currentUsername);
             if (error) throw error;
-            alert('🔑 密码修改成功！下次登录请使用新密码。');
-        } catch (err) {
-            alert('修改失败：' + err.message);
-        }
+            alert('🔑 密码修改成功！');
+            document.getElementById(inputId).value = '';
+        } catch (err) { alert('修改失败：' + err.message); }
     }
 
     function completeLogin(user) {
@@ -433,6 +524,10 @@
         } else if (tabName === 'treehole') {
             document.getElementById('pageTreehole').classList.add('active');
             document.getElementById('btnNavTreehole').classList.add('active');
+        } else if (tabName === 'profile') {
+            document.getElementById('pageProfile').classList.add('active');
+            document.getElementById('btnNavProfile').classList.add('active');
+            fetchProfile();
         }
     }
 
@@ -534,6 +629,7 @@
             if (error) throw error;
             const filteredDiaries = diaries.filter(item => item.username === currentUsername || !item.is_private);
 
+            const { data: authorsInfo } = await mySupabase.from('users').select('username, bio, avatar_url');
             const { data: likesData } = await mySupabase.from('likes').select('diary_id, username');
             
             const html = filteredDiaries.map(item => {
@@ -545,10 +641,21 @@
                 const isLikedByMe = itemLikes.some(l => l.username === currentUsername);
                 const likeBtnClass = isLikedByMe ? 'like-btn liked' : 'like-btn';
 
+                const authorInfo = authorsInfo ? authorsInfo.find(u => u.username === item.username) : null;
+                const authorBioText = authorInfo && authorInfo.bio ? authorInfo.bio : '这个家伙很懒，什么都没有留下。';
+                const authorAvatar = authorInfo && authorInfo.avatar_url ? authorInfo.avatar_url : 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+
                 return `
                     <div class="diary-item">
                         <div class="diary-header">
-                            <div><span class="diary-author">${item.username || '神秘人'}</span> ${privateBadgeHtml}</div>
+                            <div class="diary-user-info">
+                                <img src="${authorAvatar}" class="avatar">
+                                <div>
+                                    <span class="diary-author">${item.username || '神秘人'}</span> 
+                                    ${privateBadgeHtml}
+                                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">💭 ${authorBioText}</div>
+                                </div>
+                            </div>
                             <span class="diary-time">${date}</span>
                             ${deleteBtnHtml}
                         </div>
