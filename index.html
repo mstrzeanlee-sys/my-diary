@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Echo 日记 & 树洞</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* 1. 基础全局样式 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #f8fafc; margin: 0; color: #334155; padding-bottom: 80px; 
+        }
+
+        .top-status {
+            background: #eff6ff; padding: 12px 20px; font-size: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #bfdbfe; position: sticky; top: 0; z-index: 100;
+        }
+        .top-status input { padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; width: 100px; font-size: 13px; }
+        .top-status button { width: auto; padding: 6px 12px; background: #3b82f6; font-size: 13px; border-radius: 8px; color: white; border: none; cursor: pointer; }
+
+        .content-area { padding: 16px; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
+
+        /* 通用卡片 */
+        .card { 
+            background: white; padding: 24px; border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            width: 100%; box-sizing: border-box; margin-bottom: 20px;
+        }
+
+        h2 { margin-top: 0; margin-bottom: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .diary-title { color: #1e293b; }
+        .treehole-title { color: #6366f1; }
+        .friend-title { color: #ec4899; margin-top: 20px; }
+
+        textarea { 
+            width: 100%; height: 110px; margin: 8px 0; border: 1px solid #e2e8f0; 
+            border-radius: 12px; padding: 12px; box-sizing: border-box; font-size: 16px; 
+            resize: none; outline: none; background: #fdfdfd; transition: all 0.2s ease;
+        }
+        textarea:focus { border-color: #3ecf8e; background: white; box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.15); }
+        
+        .file-input-container { margin-bottom: 12px; }
+        .image-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; }
+
+        .private-toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #64748b; margin-bottom: 12px; }
+
+        button { 
+            width: 100%; padding: 14px; color: white; border: none; border-radius: 12px; 
+            cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.2s ease;
+        }
+        .save-btn { background: #3ecf8e; }
+        .whisper-btn { background: #6366f1; }
+        .friend-btn { background: #ec4899; margin-top: 12px; }
+
+        /* 日记列表 */
+        .diary-item { 
+            background: white; padding: 18px; border-radius: 16px; margin-bottom: 14px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); position: relative;
+        }
+        .diary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .diary-time { font-size: 12px; color: #94a3b8; }
+        .diary-author { font-size: 12px; color: #3b82f6; font-weight: bold; background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+        .private-badge { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+
+        .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 20px; width: auto; padding: 0 5px; }
+        .diary-text { font-size: 15px; color: #334155; word-break: break-all; line-height: 1.5; }
+        .diary-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; }
+
+        .diary-footer {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f1f5f9;
+        }
+        .like-btn {
+            background: none; border: none; color: #64748b; font-size: 15px; cursor: pointer; width: auto; padding: 6px 12px; border-radius: 8px;
+        }
+        .like-btn.liked { color: #f43f5e; font-weight: bold; background: #fff1f2; }
+
+        /* 📱 默认手机端样式：隐藏电脑版分栏，显示底部导航 */
+        .pc-layout { display: none; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+            background: white; display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #e2e8f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); z-index: 1000;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #94a3b8; font-size: 12px; font-weight: 500; cursor: pointer; width: 33.33%; height: 100%;
+        }
+        .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
+        .nav-item.active { color: #3b82f6; font-weight: bold; }
+
+        /* 💻 关键：电脑端自适应样式（当屏幕宽度大于 768 像素时生效） */
+        @media (min-width: 768px) {
+            body { padding-bottom: 20px; }
+            .bottom-nav { display: none; } /* 电脑端隐藏底部导航 */
+            .page { display: none !important; } /* 电脑端隐藏手机单页模式 */
+            
+            .pc-layout {
+                display: flex; gap: 30px; width: 100%; justify-content: center; align-items: flex-start;
+            }
+            .pc-left { width: 55%; max-width: 500px; }
+            .pc-right { width: 45%; max-width: 380px; position: sticky; top: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-status">
+    <div>👤 <span id="currentUserDisplay" style="font-weight:bold;">未登录</span></div>
+    <div>
+        <input type="text" id="usernameInput" placeholder="用户名">
+        <button onclick="login()">登录</button>
+    </div>
+</div>
+
+<div class="content-area">
+
+    <div class="pc-layout">
+        <div class="pc-left">
+            <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
+            <div id="diaryListPC"></div>
+        </div>
+
+        <div class="pc-right">
+            <div class="card">
+                <h2 class="diary-title">✍️ 记录日常</h2>
+                <textarea id="diaryContentPC" placeholder="今天发生了什么有趣的事？"></textarea>
+                <div class="file-input-container">
+                    <input type="file" id="imageFilePC" accept="image/*" onchange="previewImage(this, 'previewPC')">
+                    <img id="previewPC" class="image-preview" src="">
+                </div>
+                <div class="private-toggle">
+                    <input type="checkbox" id="privateCheckboxPC">
+                    <label for="privateCheckboxPC">🔒 仅自己可见</label>
+                </div>
+                <button class="save-btn" onclick="saveToCloud('PC')">保存到云端</button>
+            </div>
+
+            <div class="card">
+                <h2 class="treehole-title">🍃 情绪树洞</h2>
+                <textarea id="whisperContentPC" placeholder="秘密写在这里，丢进树洞瞬间消失..."></textarea>
+                <button class="whisper-btn" onclick="whisperToTree('PC')">丢进树洞</button>
+            </div>
+
+            <div class="card">
+                <h2 class="friend-title">👥 好友管理</h2>
+                <input type="text" id="friendInputPC" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
+                <button class="friend-btn" onclick="addFriend('PC')">添加好友</button>
+                <div style="margin-top:12px; font-size:14px; color:#64748b;">
+                    <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pageDiaries" class="page active">
+        <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
+        <div id="diaryListMobile"></div>
+    </div>
+
+    <div id="pageWrite" class="page">
+        <div class="card">
+            <h2 class="diary-title">✍️ 记录精彩瞬间</h2>
+            <textarea id="diaryContentMobile" placeholder="今天发生了什么有趣的事？"></textarea>
+            <div class="file-input-container">
+                <input type="file" id="imageFileMobile" accept="image/*" onchange="previewImage(this, 'previewMobile')">
+                <img id="previewMobile" class="image-preview" src="">
+            </div>
+            <div class="private-toggle">
+                <input type="checkbox" id="privateCheckboxMobile">
+                <label for="privateCheckboxMobile">🔒 仅自己可见</label>
+            </div>
+            <button class="save-btn" onclick="saveToCloud('Mobile')">保存到云端</button>
+        </div>
+    </div>
+
+    <div id="pageTreehole" class="page">
+        <div class="card">
+            <h2 class="treehole-title">🍃 情绪树洞</h2>
+            <textarea id="whisperContentMobile" placeholder="吐槽写在这里，丢进树洞瞬间消失..."></textarea>
+            <button class="whisper-btn" onclick="whisperToTree('Mobile')">丢进树洞</button>
+        </div>
+        <div class="card">
+            <h2 class="friend-title">👥 好友管理</h2>
+            <input type="text" id="friendInputMobile" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
+            <button class="friend-btn" onclick="addFriend('Mobile')">添加好友</button>
+            <div style="margin-top:12px; font-size:14px; color:#64748b;">
+                <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" id="btnNavDiaries" onclick="switchTab('diaries')">
+        <span class="icon">🌍</span><span>日记圈</span>
+    </div>
+    <div class="nav-item" id="btnNavWrite" onclick="switchTab('write')">
+        <span class="icon">✍️</span><span>写日记</span>
+    </div>
+    <div class="nav-item" id="btnNavTreehole" onclick="switchTab('treehole')">
+        <span class="icon">🍃</span><span>树洞</span>
+    </div>
+</div>
+
+<script>
+    const myUrl = 'https://exbxlombcrcbsnkosutg.supabase.co';
+    const myKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4Ynhsb21iY3JjYnNua29zdXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MDQ1NjYsImV4cCI6MjA5MzE4MDU2Nn0.vwVipONfc1EMcq6ffLmIxvc5EORKKHX0_nxNGq4gkmQ';
+    const mySupabase = window.supabase.createClient(myUrl, myKey);
+
+    let currentUsername = localStorage.getItem('chat_username') || '';
+
+    window.onload = function() {
+        if (currentUsername) {
+            document.getElementById('currentUserDisplay').innerText = currentUsername;
+            fetchDiaries();
+            fetchFriends();
+        } else {
+            alert('请在顶部输入用户名并登录！');
+        }
+    };
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+        if (tabName === 'diaries') {
+            document.getElementById('pageDiaries').classList.add('active');
+            document.getElementById('btnNavDiaries').classList.add('active');
+            fetchDiaries();
+        } else if (tabName === 'write') {
+            document.getElementById('pageWrite').classList.add('active');
+            document.getElementById('btnNavWrite').classList.add('active');
+        } else if (tabName === 'treehole') {
+            document.getElementById('pageTreehole').classList.add('active');
+            document.getElementById('btnNavTreehole').classList.add('active');
+        }
+    }
+
+    async function login() {
+        const user = document.getElementById('usernameInput').value.trim();
+        if (!user) return alert('请输入用户名！');
+        await mySupabase.from('users').insert([{ username: user }]);
+        localStorage.setItem('chat_username', user);
+        currentUsername = user;
+        document.getElementById('currentUserDisplay').innerText = user;
+        document.getElementById('usernameInput').value = '';
+        alert(`欢迎回来，${user}！`);
+        fetchDiaries();
+        fetchFriends();
+    }
+
+    async function addFriend(type) {
+        if (!currentUsername) return alert('请先登录！');
+        const inputId = type === 'PC' ? 'friendInputPC' : 'friendInputMobile';
+        const friend = document.getElementById(inputId).value.trim();
+        if (!friend) return alert('请输入好友用户名！');
+        if (friend === currentUsername) return alert('不能加自己哦！');
+
+        try {
+            await mySupabase.from('friendships').insert([{ user_id: currentUsername, friend_id: friend }]);
+            alert(`🎉 已关注：${friend}`);
+            document.getElementById(inputId).value = '';
+            fetchFriends();
+            fetchDiaries();
+        } catch (err) { alert('添加失败。'); }
+    }
+
+    async function fetchFriends() {
+        if (!currentUsername) return;
+        const { data } = await mySupabase.from('friendships').select('friend_id').eq('user_id', currentUsername);
+        const text = data && data.length > 0 ? data.map(item => item.friend_id).join(', ') : '暂无';
+        document.querySelectorAll('.myFriendsSpan').forEach(span => span.innerText = text);
+    }
+
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => { preview.src = e.target.result; preview.style.display = 'block'; }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function fetchDiaries() {
+        if (!currentUsername) return;
+        try {
+            const { data: friendsData } = await mySupabase.from('friendships').select('friend_id').eq('user_id', currentUsername);
+            const myFriends = friendsData ? friendsData.map(f => f.friend_id) : [];
+
+            const { data: diaries, error } = await mySupabase
+                .from('diaries').select('*').in('username', [currentUsername, ...myFriends])
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            const filteredDiaries = diaries.filter(item => item.username === currentUsername || !item.is_private);
+
+            const { data: likesData } = await mySupabase.from('likes').select('diary_id, username');
+            
+            const html = filteredDiaries.map(item => {
+                const date = new Date(item.created_at).toLocaleString('zh-CN');
+                let imageHtml = item.image_url ? `<img src="${item.image_url}" class="diary-img">` : '';
+                const privateBadgeHtml = item.is_private ? `<span class="private-badge">🔒 仅自己可见</span>` : '';
+                const deleteBtnHtml = item.username === currentUsername ? `<button class="delete-btn" onclick="deleteDiary('${item.id}')">×</button>` : '';
+                const itemLikes = likesData ? likesData.filter(l => l.diary_id == item.id) : [];
+                const isLikedByMe = itemLikes.some(l => l.username === currentUsername);
+                const likeBtnClass = isLikedByMe ? 'like-btn liked' : 'like-btn';
+
+                return `
+                    <div class="diary-item">
+                        <div class="diary-header">
+                            <div><span class="diary-author">${item.username || '神秘人'}</span> ${privateBadgeHtml}</div>
+                            <span class="diary-time">${date}</span>
+                            ${deleteBtnHtml}
+                        </div>
+                        <div class="diary-text">${item.content}</div>
+                        ${imageHtml}
+                        <div class="diary-footer">
+                            <button class="${likeBtnClass}" onclick="toggleLike(${item.id}, ${isLikedByMe})">
+                                ❤️ ${itemLikes.length > 0 ? itemLikes.length : '赞'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('diaryListPC').innerHTML = html;
+            document.getElementById('diaryListMobile').innerHTML = html;
+        } catch (err) { console.error(err.message); }
+    }
+
+    async function toggleLike(diaryId, isLikedByMe) {
+        if (!currentUsername) return alert('请先登录！');
+        try {
+            if (isLikedByMe) {
+                await mySupabase.from('likes').delete().eq('diary_id', diaryId).eq('username', currentUsername);
+            } else {
+                await mySupabase.from('likes').insert([{ diary_id: diaryId, username: currentUsername }]);
+            }
+            fetchDiaries();
+        } catch (err) { console.error(err); }
+    }
+
+    async function saveToCloud(type) {
+        if (!currentUsername) return alert('请先登录！');
+        const content = document.getElementById(`diaryContent${type}`).value;
+        const fileInput = document.getElementById(`imageFile${type}`);
+        const isPrivate = document.getElementById(`privateCheckbox${type}`).checked;
+
+        if (!content && !fileInput.files[0]) return alert('还没写内容或选择图片呢！');
+
+        try {
+            let uploadedImageUrl = null;
+            if (fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
+                const { error: uploadError } = await mySupabase.storage.from('diary-images').upload(fileName, file);
+                if (uploadError) throw uploadError;
+                const { data: urlData } = mySupabase.storage.from('diary-images').getPublicUrl(fileName);
+                uploadedImageUrl = urlData.publicUrl;
+            }
+
+            await mySupabase.from('diaries').insert([{ 
+                content: content, image_url: uploadedImageUrl, username: currentUsername, is_private: isPrivate
+            }]);
+
+            alert('🎉 成功！图文日记已同步。');
+            document.getElementById(`diaryContent${type}`).value = '';
+            document.getElementById(`privateCheckbox${type}`).checked = false;
+            fileInput.value = ''; 
+            document.getElementById(`preview${type}`).style.display = 'none';
+            fetchDiaries();
+            if (type === 'Mobile') switchTab('diaries');
+        } catch (err) { alert('保存失败：' + err.message); }
+    }
+
+    async function deleteDiary(diaryId) {
+        if (!confirm('确定要永久删除吗？')) return;
+        await mySupabase.from('diaries').delete().eq('id', diaryId);
+        fetchDiaries();
+    }
+
+    function whisperToTree(type) {
+        const whisper = document.getElementById(`whisperContent${type}`).value;
+        if (!whisper) return alert('写点什么吧！');
+        alert('🍃 呼……风把你的秘密带走啦。');
+        document.getElementById(`whisperContent${type}`).value = '';
+    }
+</script>
+
+</body>
+</html>
