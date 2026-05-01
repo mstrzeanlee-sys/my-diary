@@ -1,14 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head><link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script><link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Echo 日记、树洞 & 好友私聊</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* 1. 全局基础样式 */
@@ -22,6 +43,12 @@
             display: none; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #bfdbfe; position: sticky; top: 0; z-index: 100;
         }
+        .user-actions { display: flex; gap: 8px; }
+        .change-pwd-btn {
+            width: auto; padding: 6px 12px; background: #64748b; font-size: 13px;
+            border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
+        }
+        .change-pwd-btn:hover { background: #475569; }
         .logout-btn { 
             width: auto; padding: 6px 14px; background: #ef4444; font-size: 13px; 
             border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
@@ -39,11 +66,11 @@
         }
         .auth-input {
             width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #cbd5e1; 
-            outline: none; box-sizing: border-box; font-size: 16px; margin-bottom: 16px;
+            outline: none; box-sizing: border-box; font-size: 16px; margin-bottom: 14px;
         }
         .auth-btn {
             background: #3b82f6; width: 100%; padding: 14px; color: white; border: none; 
-            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
         }
 
         /* 3. 主功能区域（登录后展示） */
@@ -103,7 +130,7 @@
         }
         .like-btn.liked { color: #f43f5e; font-weight: bold; background: #fff1f2; }
 
-        /* 💬 4. 聊天专区专属样式 */
+        /* 💬 聊天专区专属样式 */
         .chat-select {
             width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1;
             font-size: 15px; margin-bottom: 12px; outline: none; background: white;
@@ -152,17 +179,22 @@
 <div id="pageAuth">
     <div class="auth-card">
         <h1>Echo 日记 & 社交</h1>
-        <p>输入你的专属用户名开始使用</p>
-        <input type="text" id="usernameInput" class="auth-input" placeholder="输入用户名（如：小明）" onkeydown="if(event.key==='Enter') login()">
-        <button class="auth-btn" onclick="login()">进入系统</button>
+        <p id="authNotice" style="color: #64748b; font-size: 14px; margin-bottom: 20px;">新用户输入密码即可直接完成注册</p>
+        <input type="text" id="usernameInput" class="auth-input" placeholder="输入用户名">
+        <input type="password" id="passwordInput" class="auth-input" placeholder="输入你的密码">
+        <button class="auth-btn" onclick="handleAuth()">登 录 / 注 册</button>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">* 首次登录会自动绑定你输入的密码 *</div>
     </div>
 </div>
 
 <div id="mainContent">
     
     <div class="top-status">
-        <div>👤 当前：<span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
-        <button class="logout-btn" onclick="logout()">登出</button>
+        <div>👤 用户：<span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
+        <div class="user-actions">
+            <button class="change-pwd-btn" onclick="changeUserPassword()">修改密码</button>
+            <button class="logout-btn" onclick="logout()">登出</button>
+        </div>
     </div>
 
     <div class="content-area">
@@ -294,8 +326,8 @@
     const mySupabase = window.supabase.createClient(myUrl, myKey);
 
     let currentUsername = localStorage.getItem('chat_username') || '';
-    let currentPartner = ''; // 正在私聊的好友
-    let chatTimer = null;    // 消息刷新定时器
+    let currentPartner = '';
+    let chatTimer = null;
 
     window.onload = function() { checkAuth(); };
 
@@ -315,13 +347,64 @@
         }
     }
 
-    async function login() {
+    // 💡 处理登录/自主注册逻辑
+    async function handleAuth() {
         const user = document.getElementById('usernameInput').value.trim();
-        if (!user) return alert('请输入用户名！');
-        await mySupabase.from('users').insert([{ username: user }]);
+        const pass = document.getElementById('passwordInput').value.trim();
+        if (!user || !pass) return alert('请输入完整的用户名和密码！');
+
+        try {
+            const { data: existUser, error } = await mySupabase
+                .from('users').select('*').eq('username', user).maybeSingle();
+
+            if (error) throw error;
+
+            if (existUser) {
+                // 已有用户，核对密码
+                if (existUser.password === pass) {
+                    alert(`🎉 登录成功！欢迎回来，${user}。`);
+                    completeLogin(user);
+                } else {
+                    alert('❌ 密码错误，请重试！');
+                }
+            } else {
+                // 没有该用户，以输入的密码进行注册
+                const { error: insertErr } = await mySupabase
+                    .from('users').insert([{ username: user, password: pass }]);
+
+                if (insertErr) throw insertErr;
+                alert(`🎉 注册成功！已使用你输入的密码创建账号。`);
+                completeLogin(user);
+            }
+        } catch (err) {
+            alert('操作失败，请检查网络：' + err.message);
+        }
+    }
+
+    // 💡 用户在登录状态下自行修改密码
+    async function changeUserPassword() {
+        const newPassword = prompt('请输入你要设置的新密码：');
+        if (!newPassword) return;
+        if (newPassword.trim() === '') return alert('新密码不能为空！');
+
+        try {
+            const { error } = await mySupabase
+                .from('users')
+                .update({ password: newPassword.trim() })
+                .eq('username', currentUsername);
+
+            if (error) throw error;
+            alert('🔑 密码修改成功！下次登录请使用新密码。');
+        } catch (err) {
+            alert('修改失败：' + err.message);
+        }
+    }
+
+    function completeLogin(user) {
         localStorage.setItem('chat_username', user);
         currentUsername = user;
         document.getElementById('usernameInput').value = '';
+        document.getElementById('passwordInput').value = '';
         checkAuth();
     }
 
@@ -353,7 +436,6 @@
         }
     }
 
-    // 💡 实时聊天轮询函数（每2秒刷一次新消息）
     function startChatPolling() {
         clearInterval(chatTimer);
         chatTimer = setInterval(() => { fetchMessages(); }, 2000);
@@ -380,7 +462,6 @@
         const text = data && data.length > 0 ? data.map(item => item.friend_id).join(', ') : '暂无';
         document.querySelectorAll('.myFriendsSpan').forEach(span => span.innerText = text);
 
-        // 💡 同步更新私聊好友下拉框
         const selectPC = document.getElementById('chatSelectPC');
         const selectMobile = document.getElementById('chatSelectMobile');
         const optionsHtml = `<option value="">-- 选择一个好友开始聊天 --</option>` + 
@@ -390,7 +471,6 @@
         selectMobile.innerHTML = optionsHtml;
     }
 
-    // 💡 切换聊天对象
     function switchChatPartner(type) {
         const selectId = type === 'PC' ? 'chatSelectPC' : 'chatSelectMobile';
         currentPartner = document.getElementById(selectId).value;
@@ -398,14 +478,11 @@
         startChatPolling();
     }
 
-    // 💡 获取聊天消息
     async function fetchMessages() {
         if (!currentUsername || !currentPartner) return;
         try {
-            // 获取你发给好友、以及好友发给你的所有消息
             const { data } = await mySupabase
-                .from('messages')
-                .select('*')
+                .from('messages').select('*')
                 .or(`and(sender.eq.${currentUsername},receiver.eq.${currentPartner}),and(sender.eq.${currentPartner},receiver.eq.${currentUsername})`)
                 .order('created_at', { ascending: true });
 
@@ -419,7 +496,6 @@
                 }).join('');
                 chatBoxPC.innerHTML = msgHtml;
                 chatBoxMobile.innerHTML = msgHtml;
-                // 滚动条沉底
                 chatBoxPC.scrollTop = chatBoxPC.scrollHeight;
                 chatBoxMobile.scrollTop = chatBoxMobile.scrollHeight;
             } else {
@@ -430,10 +506,8 @@
         } catch (err) { console.error(err); }
     }
 
-    // 💡 发送消息
     async function sendChat(type) {
-        if (!currentUsername) return;
-        if (!currentPartner) return alert('请先选择一个私聊对象！');
+        if (!currentUsername || !currentPartner) return;
         const inputId = type === 'PC' ? 'chatMsgPC' : 'chatMsgMobile';
         const msgText = document.getElementById(inputId).value.trim();
         if (!msgText) return;
@@ -443,11 +517,10 @@
                 sender: currentUsername, receiver: currentPartner, message: msgText 
             }]);
             document.getElementById(inputId).value = '';
-            fetchMessages(); // 刷新
+            fetchMessages();
         } catch (err) { console.error(err); }
     }
 
-    // 获取日记列表
     async function fetchDiaries() {
         if (!currentUsername) return;
         try {

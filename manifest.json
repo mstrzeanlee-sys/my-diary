@@ -1,7 +1,21 @@
 {
   "short_name": "Echo日记",
   "name": "Echo 日记 & 社交",
+  "icons": [{
+  "short_name": "Echo日记",
+  "name": "Echo 日记 & 社交",
   "icons": [
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#f8fafc",
+  "display": "standalone",
+  "theme_color": "#3b82f6"
+}
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3652/3652191.png",
       "type": "image/png",
