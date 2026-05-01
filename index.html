@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
+<head><link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Echo 日记 & 树洞</title>
+    <title>Echo 日记、树洞 & 好友私聊</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* 1. 全局样式重置 */
+        /* 1. 全局基础样式 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: #f8fafc; margin: 0; color: #334155; padding-bottom: 80px; 
         }
 
-        /* 2. 顶栏状态区：登录后才显示 */
         .top-status {
             background: #eff6ff; padding: 12px 20px; font-size: 14px;
             display: none; justify-content: space-between; align-items: center;
@@ -22,9 +26,8 @@
             width: auto; padding: 6px 14px; background: #ef4444; font-size: 13px; 
             border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
         }
-        .logout-btn:hover { background: #dc2626; }
 
-        /* 3. 独立登录与注册页面 */
+        /* 2. 独立登录与注册页面 */
         #pageAuth {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh; padding: 20px; box-sizing: border-box; background: #f1f5f9;
@@ -34,20 +37,16 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
             width: 100%; max-width: 380px; text-align: center; box-sizing: border-box;
         }
-        .auth-card h1 { margin: 0 0 8px 0; font-size: 26px; color: #0f172a; }
-        .auth-card p { margin: 0 0 24px 0; font-size: 14px; color: #64748b; }
         .auth-input {
             width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #cbd5e1; 
-            outline: none; box-sizing: border-box; font-size: 16px; margin-bottom: 16px; transition: all 0.2s;
+            outline: none; box-sizing: border-box; font-size: 16px; margin-bottom: 16px;
         }
-        .auth-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .auth-btn {
             background: #3b82f6; width: 100%; padding: 14px; color: white; border: none; 
-            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
         }
-        .auth-btn:hover { background: #2563eb; }
 
-        /* 4. 主功能区域（登录后展示） */
+        /* 3. 主功能区域（登录后展示） */
         #mainContent { display: none; }
         .content-area { padding: 16px; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
 
@@ -62,28 +61,28 @@
         .diary-title { color: #1e293b; }
         .treehole-title { color: #6366f1; }
         .friend-title { color: #ec4899; margin-top: 20px; }
+        .chat-title { color: #8b5cf6; }
 
         textarea { 
             width: 100%; height: 110px; margin: 8px 0; border: 1px solid #e2e8f0; 
             border-radius: 12px; padding: 12px; box-sizing: border-box; font-size: 16px; 
             resize: none; outline: none; background: #fdfdfd; transition: all 0.2s ease;
         }
-        textarea:focus { border-color: #3ecf8e; background: white; box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.15); }
+        textarea:focus { border-color: #3ecf8e; background: white; }
         
         .file-input-container { margin-bottom: 12px; }
         .image-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; }
-
         .private-toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #64748b; margin-bottom: 12px; }
 
         button { 
             width: 100%; padding: 14px; color: white; border: none; border-radius: 12px; 
-            cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.2s ease;
+            cursor: pointer; font-size: 16px; font-weight: 600;
         }
         .save-btn { background: #3ecf8e; }
         .whisper-btn { background: #6366f1; }
         .friend-btn { background: #ec4899; margin-top: 12px; }
 
-        /* 日记列表 */
+        /* 日记列表样式 */
         .diary-item { 
             background: white; padding: 18px; border-radius: 16px; margin-bottom: 14px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); position: relative;
@@ -92,9 +91,7 @@
         .diary-time { font-size: 12px; color: #94a3b8; }
         .diary-author { font-size: 12px; color: #3b82f6; font-weight: bold; background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
         .private-badge { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-
         .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 20px; width: auto; padding: 0 5px; }
-        .delete-btn:hover { color: #ef4444; }
         .diary-text { font-size: 15px; color: #334155; word-break: break-all; line-height: 1.5; }
         .diary-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; }
 
@@ -106,7 +103,20 @@
         }
         .like-btn.liked { color: #f43f5e; font-weight: bold; background: #fff1f2; }
 
-        /* 📱 手机端单页布局样式 */
+        /* 💬 4. 聊天专区专属样式 */
+        .chat-select {
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1;
+            font-size: 15px; margin-bottom: 12px; outline: none; background: white;
+        }
+        .chat-box {
+            height: 300px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fcfcfc;
+            padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;
+        }
+        .msg { max-width: 75%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-all; }
+        .msg.me { align-self: flex-end; background: #8b5cf6; color: white; border-bottom-right-radius: 2px; }
+        .msg.friend { align-self: flex-start; background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 2px; }
+
+        /* 📱 默认手机端单页布局样式 */
         .pc-layout { display: none; }
         .page { display: none; }
         .page.active { display: block; }
@@ -118,7 +128,7 @@
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #94a3b8; font-size: 12px; font-weight: 500; cursor: pointer; width: 33.33%; height: 100%;
+            color: #94a3b8; font-size: 11px; font-weight: 500; cursor: pointer; width: 25%; height: 100%;
         }
         .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
         .nav-item.active { color: #3b82f6; font-weight: bold; }
@@ -130,10 +140,10 @@
             .page { display: none !important; }
             
             .pc-layout {
-                display: flex; gap: 30px; width: 100%; justify-content: center; align-items: flex-start;
+                display: flex; gap: 24px; width: 100%; justify-content: center; align-items: flex-start;
             }
-            .pc-left { width: 55%; max-width: 500px; }
-            .pc-right { width: 45%; max-width: 380px; position: sticky; top: 80px; }
+            .pc-left { width: 52%; max-width: 480px; }
+            .pc-right { width: 48%; max-width: 420px; position: sticky; top: 80px; }
         }
     </style>
 </head>
@@ -141,7 +151,7 @@
 
 <div id="pageAuth">
     <div class="auth-card">
-        <h1>Echo 日记</h1>
+        <h1>Echo 日记 & 社交</h1>
         <p>输入你的专属用户名开始使用</p>
         <input type="text" id="usernameInput" class="auth-input" placeholder="输入用户名（如：小明）" onkeydown="if(event.key==='Enter') login()">
         <button class="auth-btn" onclick="login()">进入系统</button>
@@ -151,18 +161,32 @@
 <div id="mainContent">
     
     <div class="top-status">
-        <div>👤 当前登录：<span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
+        <div>👤 当前：<span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
         <button class="logout-btn" onclick="logout()">登出</button>
     </div>
 
     <div class="content-area">
         <div class="pc-layout">
             <div class="pc-left">
-                <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
+                <h2>🌍 大家的生活</h2>
                 <div id="diaryListPC"></div>
             </div>
 
             <div class="pc-right">
+                <div class="card">
+                    <h2 class="chat-title">💬 好友私聊</h2>
+                    <select id="chatSelectPC" class="chat-select" onchange="switchChatPartner('PC')">
+                        <option value="">-- 选择一个好友开始聊天 --</option>
+                    </select>
+                    <div id="chatBoxPC" class="chat-box">
+                        <div style="color: #94a3b8; text-align: center; margin: auto;">请先在上方选择一位好友</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="chatMsgPC" style="flex:1; padding:12px; border-radius:10px; border:1px solid #cbd5e1; outline:none; font-size:15px;" placeholder="输入消息..." onkeydown="if(event.key==='Enter') sendChat('PC')">
+                        <button style="width:auto; padding:12px 18px; background:#8b5cf6;" onclick="sendChat('PC')">发送</button>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h2 class="diary-title">✍️ 记录日常</h2>
                     <textarea id="diaryContentPC" placeholder="今天发生了什么有趣的事？"></textarea>
@@ -174,7 +198,7 @@
                         <input type="checkbox" id="privateCheckboxPC">
                         <label for="privateCheckboxPC">🔒 仅自己可见</label>
                     </div>
-                    <button class="save-btn" onclick="saveToCloud('PC')">保存到云端</button>
+                    <button class="save-btn" onclick="saveToCloud('PC')">发布到云端</button>
                 </div>
 
                 <div class="card">
@@ -188,14 +212,14 @@
                     <input type="text" id="friendInputPC" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
                     <button class="friend-btn" onclick="addFriend('PC')">添加好友</button>
                     <div style="margin-top:12px; font-size:14px; color:#64748b;">
-                        <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
+                        <strong>我的好友：</strong> <span class="myFriendsSpan">暂无</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="pageDiaries" class="page active">
-            <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
+            <h2>🌍 大家的生活</h2>
             <div id="diaryListMobile"></div>
         </div>
 
@@ -212,6 +236,22 @@
                     <label for="privateCheckboxMobile">🔒 仅自己可见</label>
                 </div>
                 <button class="save-btn" onclick="saveToCloud('Mobile')">保存到云端</button>
+            </div>
+        </div>
+
+        <div id="pageChat" class="page">
+            <div class="card">
+                <h2 class="chat-title">💬 好友私聊</h2>
+                <select id="chatSelectMobile" class="chat-select" onchange="switchChatPartner('Mobile')">
+                    <option value="">-- 选择一个好友开始聊天 --</option>
+                </select>
+                <div id="chatBoxMobile" class="chat-box">
+                    <div style="color: #94a3b8; text-align: center; margin: auto;">请先在上方选择一位好友</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="chatMsgMobile" style="flex:1; padding:12px; border-radius:10px; border:1px solid #cbd5e1; outline:none; font-size:15px;" placeholder="输入消息..." onkeydown="if(event.key==='Enter') sendChat('Mobile')">
+                    <button style="width:auto; padding:12px 18px; background:#8b5cf6;" onclick="sendChat('Mobile')">发送</button>
+                </div>
             </div>
         </div>
 
@@ -239,6 +279,9 @@
         <div class="nav-item" id="btnNavWrite" onclick="switchTab('write')">
             <span class="icon">✍️</span><span>写日记</span>
         </div>
+        <div class="nav-item" id="btnNavChat" onclick="switchTab('chat')">
+            <span class="icon">💬</span><span>私聊</span>
+        </div>
         <div class="nav-item" id="btnNavTreehole" onclick="switchTab('treehole')">
             <span class="icon">🍃</span><span>树洞</span>
         </div>
@@ -251,12 +294,11 @@
     const mySupabase = window.supabase.createClient(myUrl, myKey);
 
     let currentUsername = localStorage.getItem('chat_username') || '';
+    let currentPartner = ''; // 正在私聊的好友
+    let chatTimer = null;    // 消息刷新定时器
 
-    window.onload = function() {
-        checkAuth();
-    };
+    window.onload = function() { checkAuth(); };
 
-    // 1. 检查用户是否已经登录
     function checkAuth() {
         if (currentUsername) {
             document.getElementById('pageAuth').style.display = 'none';
@@ -269,32 +311,27 @@
             document.getElementById('pageAuth').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'none';
             document.querySelector('.top-status').style.display = 'none';
+            clearInterval(chatTimer);
         }
     }
 
-    // 2. 登录/注册
     async function login() {
         const user = document.getElementById('usernameInput').value.trim();
         if (!user) return alert('请输入用户名！');
-
-        // 将新用户尝试存入数据库
         await mySupabase.from('users').insert([{ username: user }]);
-        
         localStorage.setItem('chat_username', user);
         currentUsername = user;
         document.getElementById('usernameInput').value = '';
-        checkAuth(); // 刷新身份状态
+        checkAuth();
     }
 
-    // 3. 登出
     function logout() {
         if (!confirm('确定要登出当前账号吗？')) return;
         localStorage.removeItem('chat_username');
         currentUsername = '';
-        checkAuth(); // 切回登录卡片界面
+        checkAuth();
     }
 
-    // 手机 Tab 切换
     function switchTab(tabName) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -306,10 +343,20 @@
         } else if (tabName === 'write') {
             document.getElementById('pageWrite').classList.add('active');
             document.getElementById('btnNavWrite').classList.add('active');
+        } else if (tabName === 'chat') {
+            document.getElementById('pageChat').classList.add('active');
+            document.getElementById('btnNavChat').classList.add('active');
+            startChatPolling();
         } else if (tabName === 'treehole') {
             document.getElementById('pageTreehole').classList.add('active');
             document.getElementById('btnNavTreehole').classList.add('active');
         }
+    }
+
+    // 💡 实时聊天轮询函数（每2秒刷一次新消息）
+    function startChatPolling() {
+        clearInterval(chatTimer);
+        chatTimer = setInterval(() => { fetchMessages(); }, 2000);
     }
 
     async function addFriend(type) {
@@ -321,10 +368,9 @@
 
         try {
             await mySupabase.from('friendships').insert([{ user_id: currentUsername, friend_id: friend }]);
-            alert(`🎉 已关注：${friend}`);
+            alert(`🎉 已成功关注好友：${friend}`);
             document.getElementById(inputId).value = '';
             fetchFriends();
-            fetchDiaries();
         } catch (err) { alert('添加失败。'); }
     }
 
@@ -333,17 +379,75 @@
         const { data } = await mySupabase.from('friendships').select('friend_id').eq('user_id', currentUsername);
         const text = data && data.length > 0 ? data.map(item => item.friend_id).join(', ') : '暂无';
         document.querySelectorAll('.myFriendsSpan').forEach(span => span.innerText = text);
+
+        // 💡 同步更新私聊好友下拉框
+        const selectPC = document.getElementById('chatSelectPC');
+        const selectMobile = document.getElementById('chatSelectMobile');
+        const optionsHtml = `<option value="">-- 选择一个好友开始聊天 --</option>` + 
+            (data ? data.map(item => `<option value="${item.friend_id}">${item.friend_id}</option>`).join('') : '');
+
+        selectPC.innerHTML = optionsHtml;
+        selectMobile.innerHTML = optionsHtml;
     }
 
-    function previewImage(input, previewId) {
-        const preview = document.getElementById(previewId);
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => { preview.src = e.target.result; preview.style.display = 'block'; }
-            reader.readAsDataURL(input.files[0]);
-        }
+    // 💡 切换聊天对象
+    function switchChatPartner(type) {
+        const selectId = type === 'PC' ? 'chatSelectPC' : 'chatSelectMobile';
+        currentPartner = document.getElementById(selectId).value;
+        fetchMessages();
+        startChatPolling();
     }
 
+    // 💡 获取聊天消息
+    async function fetchMessages() {
+        if (!currentUsername || !currentPartner) return;
+        try {
+            // 获取你发给好友、以及好友发给你的所有消息
+            const { data } = await mySupabase
+                .from('messages')
+                .select('*')
+                .or(`and(sender.eq.${currentUsername},receiver.eq.${currentPartner}),and(sender.eq.${currentPartner},receiver.eq.${currentUsername})`)
+                .order('created_at', { ascending: true });
+
+            const chatBoxPC = document.getElementById('chatBoxPC');
+            const chatBoxMobile = document.getElementById('chatBoxMobile');
+
+            if (data && data.length > 0) {
+                const msgHtml = data.map(m => {
+                    const cls = m.sender === currentUsername ? 'me' : 'friend';
+                    return `<div class="msg ${cls}">${m.message}</div>`;
+                }).join('');
+                chatBoxPC.innerHTML = msgHtml;
+                chatBoxMobile.innerHTML = msgHtml;
+                // 滚动条沉底
+                chatBoxPC.scrollTop = chatBoxPC.scrollHeight;
+                chatBoxMobile.scrollTop = chatBoxMobile.scrollHeight;
+            } else {
+                const emptyHtml = `<div style="color:#94a3b8; text-align:center; margin:auto;">没有消息，开始聊点什么吧！</div>`;
+                chatBoxPC.innerHTML = emptyHtml;
+                chatBoxMobile.innerHTML = emptyHtml;
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    // 💡 发送消息
+    async function sendChat(type) {
+        if (!currentUsername) return;
+        if (!currentPartner) return alert('请先选择一个私聊对象！');
+        const inputId = type === 'PC' ? 'chatMsgPC' : 'chatMsgMobile';
+        const msgText = document.getElementById(inputId).value.trim();
+        if (!msgText) return;
+
+        try {
+            await mySupabase.from('messages').insert([{ 
+                sender: currentUsername, receiver: currentPartner, message: msgText 
+            }]);
+            document.getElementById(inputId).value = '';
+            fetchMessages(); // 刷新
+        } catch (err) { console.error(err); }
+    }
+
+    // 获取日记列表
     async function fetchDiaries() {
         if (!currentUsername) return;
         try {
@@ -426,4 +530,38 @@
                 content: content, image_url: uploadedImageUrl, username: currentUsername, is_private: isPrivate
             }]);
 
-            alert('🎉 成功！图文
+            alert('🎉 成功！图文日记已同步。');
+            document.getElementById(`diaryContent${type}`).value = '';
+            document.getElementById(`privateCheckbox${type}`).checked = false;
+            fileInput.value = ''; 
+            document.getElementById(`preview${type}`).style.display = 'none';
+            fetchDiaries();
+            if (type === 'Mobile') switchTab('diaries');
+        } catch (err) { alert('保存失败：' + err.message); }
+    }
+
+    async function deleteDiary(diaryId) {
+        if (!confirm('确定要永久删除吗？')) return;
+        await mySupabase.from('diaries').delete().eq('id', diaryId);
+        fetchDiaries();
+    }
+
+    function whisperToTree(type) {
+        const whisper = document.getElementById(`whisperContent${type}`).value;
+        if (!whisper) return alert('写点什么吧！');
+        alert('🍃 呼……风把你的秘密带走啦。');
+        document.getElementById(`whisperContent${type}`).value = '';
+    }
+
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => { preview.src = e.target.result; preview.style.display = 'block'; }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+</body>
+</html>
