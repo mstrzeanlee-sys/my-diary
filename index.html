@@ -6,20 +6,49 @@
     <title>Echo 日记 & 树洞</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* 1. 基础全局样式 */
+        /* 1. 全局样式重置 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: #f8fafc; margin: 0; color: #334155; padding-bottom: 80px; 
         }
 
+        /* 2. 顶栏状态区：登录后才显示 */
         .top-status {
             background: #eff6ff; padding: 12px 20px; font-size: 14px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: none; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #bfdbfe; position: sticky; top: 0; z-index: 100;
         }
-        .top-status input { padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; width: 100px; font-size: 13px; }
-        .top-status button { width: auto; padding: 6px 12px; background: #3b82f6; font-size: 13px; border-radius: 8px; color: white; border: none; cursor: pointer; }
+        .logout-btn { 
+            width: auto; padding: 6px 14px; background: #ef4444; font-size: 13px; 
+            border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
+        }
+        .logout-btn:hover { background: #dc2626; }
 
+        /* 3. 独立登录与注册页面 */
+        #pageAuth {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box; background: #f1f5f9;
+        }
+        .auth-card {
+            background: white; padding: 32px; border-radius: 20px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            width: 100%; max-width: 380px; text-align: center; box-sizing: border-box;
+        }
+        .auth-card h1 { margin: 0 0 8px 0; font-size: 26px; color: #0f172a; }
+        .auth-card p { margin: 0 0 24px 0; font-size: 14px; color: #64748b; }
+        .auth-input {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #cbd5e1; 
+            outline: none; box-sizing: border-box; font-size: 16px; margin-bottom: 16px; transition: all 0.2s;
+        }
+        .auth-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .auth-btn {
+            background: #3b82f6; width: 100%; padding: 14px; color: white; border: none; 
+            border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        .auth-btn:hover { background: #2563eb; }
+
+        /* 4. 主功能区域（登录后展示） */
+        #mainContent { display: none; }
         .content-area { padding: 16px; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
 
         /* 通用卡片 */
@@ -65,6 +94,7 @@
         .private-badge { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
         .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 20px; width: auto; padding: 0 5px; }
+        .delete-btn:hover { color: #ef4444; }
         .diary-text { font-size: 15px; color: #334155; word-break: break-all; line-height: 1.5; }
         .diary-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; margin-top: 12px; }
 
@@ -76,7 +106,7 @@
         }
         .like-btn.liked { color: #f43f5e; font-weight: bold; background: #fff1f2; }
 
-        /* 📱 默认手机端样式：隐藏电脑版分栏，显示底部导航 */
+        /* 📱 手机端单页布局样式 */
         .pc-layout { display: none; }
         .page { display: none; }
         .page.active { display: block; }
@@ -93,11 +123,11 @@
         .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
         .nav-item.active { color: #3b82f6; font-weight: bold; }
 
-        /* 💻 关键：电脑端自适应样式（当屏幕宽度大于 768 像素时生效） */
+        /* 💻 电脑端自适应布局样式 */
         @media (min-width: 768px) {
             body { padding-bottom: 20px; }
-            .bottom-nav { display: none; } /* 电脑端隐藏底部导航 */
-            .page { display: none !important; } /* 电脑端隐藏手机单页模式 */
+            .bottom-nav { display: none; }
+            .page { display: none !important; }
             
             .pc-layout {
                 display: flex; gap: 30px; width: 100%; justify-content: center; align-items: flex-start;
@@ -109,47 +139,92 @@
 </head>
 <body>
 
-<div class="top-status">
-    <div>👤 <span id="currentUserDisplay" style="font-weight:bold;">未登录</span></div>
-    <div>
-        <input type="text" id="usernameInput" placeholder="用户名">
-        <button onclick="login()">登录</button>
+<div id="pageAuth">
+    <div class="auth-card">
+        <h1>Echo 日记</h1>
+        <p>输入你的专属用户名开始使用</p>
+        <input type="text" id="usernameInput" class="auth-input" placeholder="输入用户名（如：小明）" onkeydown="if(event.key==='Enter') login()">
+        <button class="auth-btn" onclick="login()">进入系统</button>
     </div>
 </div>
 
-<div class="content-area">
+<div id="mainContent">
+    
+    <div class="top-status">
+        <div>👤 当前登录：<span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
+        <button class="logout-btn" onclick="logout()">登出</button>
+    </div>
 
-    <div class="pc-layout">
-        <div class="pc-left">
-            <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
-            <div id="diaryListPC"></div>
+    <div class="content-area">
+        <div class="pc-layout">
+            <div class="pc-left">
+                <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
+                <div id="diaryListPC"></div>
+            </div>
+
+            <div class="pc-right">
+                <div class="card">
+                    <h2 class="diary-title">✍️ 记录日常</h2>
+                    <textarea id="diaryContentPC" placeholder="今天发生了什么有趣的事？"></textarea>
+                    <div class="file-input-container">
+                        <input type="file" id="imageFilePC" accept="image/*" onchange="previewImage(this, 'previewPC')">
+                        <img id="previewPC" class="image-preview" src="">
+                    </div>
+                    <div class="private-toggle">
+                        <input type="checkbox" id="privateCheckboxPC">
+                        <label for="privateCheckboxPC">🔒 仅自己可见</label>
+                    </div>
+                    <button class="save-btn" onclick="saveToCloud('PC')">保存到云端</button>
+                </div>
+
+                <div class="card">
+                    <h2 class="treehole-title">🍃 情绪树洞</h2>
+                    <textarea id="whisperContentPC" placeholder="秘密写在这里，丢进树洞瞬间消失..."></textarea>
+                    <button class="whisper-btn" onclick="whisperToTree('PC')">丢进树洞</button>
+                </div>
+
+                <div class="card">
+                    <h2 class="friend-title">👥 好友管理</h2>
+                    <input type="text" id="friendInputPC" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
+                    <button class="friend-btn" onclick="addFriend('PC')">添加好友</button>
+                    <div style="margin-top:12px; font-size:14px; color:#64748b;">
+                        <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="pc-right">
+        <div id="pageDiaries" class="page active">
+            <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
+            <div id="diaryListMobile"></div>
+        </div>
+
+        <div id="pageWrite" class="page">
             <div class="card">
-                <h2 class="diary-title">✍️ 记录日常</h2>
-                <textarea id="diaryContentPC" placeholder="今天发生了什么有趣的事？"></textarea>
+                <h2 class="diary-title">✍️ 记录精彩瞬间</h2>
+                <textarea id="diaryContentMobile" placeholder="今天发生了什么有趣的事？"></textarea>
                 <div class="file-input-container">
-                    <input type="file" id="imageFilePC" accept="image/*" onchange="previewImage(this, 'previewPC')">
-                    <img id="previewPC" class="image-preview" src="">
+                    <input type="file" id="imageFileMobile" accept="image/*" onchange="previewImage(this, 'previewMobile')">
+                    <img id="previewMobile" class="image-preview" src="">
                 </div>
                 <div class="private-toggle">
-                    <input type="checkbox" id="privateCheckboxPC">
-                    <label for="privateCheckboxPC">🔒 仅自己可见</label>
+                    <input type="checkbox" id="privateCheckboxMobile">
+                    <label for="privateCheckboxMobile">🔒 仅自己可见</label>
                 </div>
-                <button class="save-btn" onclick="saveToCloud('PC')">保存到云端</button>
+                <button class="save-btn" onclick="saveToCloud('Mobile')">保存到云端</button>
             </div>
+        </div>
 
+        <div id="pageTreehole" class="page">
             <div class="card">
                 <h2 class="treehole-title">🍃 情绪树洞</h2>
-                <textarea id="whisperContentPC" placeholder="秘密写在这里，丢进树洞瞬间消失..."></textarea>
-                <button class="whisper-btn" onclick="whisperToTree('PC')">丢进树洞</button>
+                <textarea id="whisperContentMobile" placeholder="吐槽写在这里，丢进树洞瞬间消失..."></textarea>
+                <button class="whisper-btn" onclick="whisperToTree('Mobile')">丢进树洞</button>
             </div>
-
             <div class="card">
                 <h2 class="friend-title">👥 好友管理</h2>
-                <input type="text" id="friendInputPC" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
-                <button class="friend-btn" onclick="addFriend('PC')">添加好友</button>
+                <input type="text" id="friendInputMobile" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
+                <button class="friend-btn" onclick="addFriend('Mobile')">添加好友</button>
                 <div style="margin-top:12px; font-size:14px; color:#64748b;">
                     <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
                 </div>
@@ -157,54 +232,16 @@
         </div>
     </div>
 
-    <div id="pageDiaries" class="page active">
-        <h2 style="margin-bottom: 15px;">🌍 大家的生活</h2>
-        <div id="diaryListMobile"></div>
-    </div>
-
-    <div id="pageWrite" class="page">
-        <div class="card">
-            <h2 class="diary-title">✍️ 记录精彩瞬间</h2>
-            <textarea id="diaryContentMobile" placeholder="今天发生了什么有趣的事？"></textarea>
-            <div class="file-input-container">
-                <input type="file" id="imageFileMobile" accept="image/*" onchange="previewImage(this, 'previewMobile')">
-                <img id="previewMobile" class="image-preview" src="">
-            </div>
-            <div class="private-toggle">
-                <input type="checkbox" id="privateCheckboxMobile">
-                <label for="privateCheckboxMobile">🔒 仅自己可见</label>
-            </div>
-            <button class="save-btn" onclick="saveToCloud('Mobile')">保存到云端</button>
+    <div class="bottom-nav">
+        <div class="nav-item active" id="btnNavDiaries" onclick="switchTab('diaries')">
+            <span class="icon">🌍</span><span>日记圈</span>
         </div>
-    </div>
-
-    <div id="pageTreehole" class="page">
-        <div class="card">
-            <h2 class="treehole-title">🍃 情绪树洞</h2>
-            <textarea id="whisperContentMobile" placeholder="吐槽写在这里，丢进树洞瞬间消失..."></textarea>
-            <button class="whisper-btn" onclick="whisperToTree('Mobile')">丢进树洞</button>
+        <div class="nav-item" id="btnNavWrite" onclick="switchTab('write')">
+            <span class="icon">✍️</span><span>写日记</span>
         </div>
-        <div class="card">
-            <h2 class="friend-title">👥 好友管理</h2>
-            <input type="text" id="friendInputMobile" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
-            <button class="friend-btn" onclick="addFriend('Mobile')">添加好友</button>
-            <div style="margin-top:12px; font-size:14px; color:#64748b;">
-                <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
-            </div>
+        <div class="nav-item" id="btnNavTreehole" onclick="switchTab('treehole')">
+            <span class="icon">🍃</span><span>树洞</span>
         </div>
-    </div>
-
-</div>
-
-<div class="bottom-nav">
-    <div class="nav-item active" id="btnNavDiaries" onclick="switchTab('diaries')">
-        <span class="icon">🌍</span><span>日记圈</span>
-    </div>
-    <div class="nav-item" id="btnNavWrite" onclick="switchTab('write')">
-        <span class="icon">✍️</span><span>写日记</span>
-    </div>
-    <div class="nav-item" id="btnNavTreehole" onclick="switchTab('treehole')">
-        <span class="icon">🍃</span><span>树洞</span>
     </div>
 </div>
 
@@ -216,15 +253,48 @@
     let currentUsername = localStorage.getItem('chat_username') || '';
 
     window.onload = function() {
+        checkAuth();
+    };
+
+    // 1. 检查用户是否已经登录
+    function checkAuth() {
         if (currentUsername) {
+            document.getElementById('pageAuth').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.querySelector('.top-status').style.display = 'flex';
             document.getElementById('currentUserDisplay').innerText = currentUsername;
             fetchDiaries();
             fetchFriends();
         } else {
-            alert('请在顶部输入用户名并登录！');
+            document.getElementById('pageAuth').style.display = 'flex';
+            document.getElementById('mainContent').style.display = 'none';
+            document.querySelector('.top-status').style.display = 'none';
         }
-    };
+    }
 
+    // 2. 登录/注册
+    async function login() {
+        const user = document.getElementById('usernameInput').value.trim();
+        if (!user) return alert('请输入用户名！');
+
+        // 将新用户尝试存入数据库
+        await mySupabase.from('users').insert([{ username: user }]);
+        
+        localStorage.setItem('chat_username', user);
+        currentUsername = user;
+        document.getElementById('usernameInput').value = '';
+        checkAuth(); // 刷新身份状态
+    }
+
+    // 3. 登出
+    function logout() {
+        if (!confirm('确定要登出当前账号吗？')) return;
+        localStorage.removeItem('chat_username');
+        currentUsername = '';
+        checkAuth(); // 切回登录卡片界面
+    }
+
+    // 手机 Tab 切换
     function switchTab(tabName) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -242,21 +312,8 @@
         }
     }
 
-    async function login() {
-        const user = document.getElementById('usernameInput').value.trim();
-        if (!user) return alert('请输入用户名！');
-        await mySupabase.from('users').insert([{ username: user }]);
-        localStorage.setItem('chat_username', user);
-        currentUsername = user;
-        document.getElementById('currentUserDisplay').innerText = user;
-        document.getElementById('usernameInput').value = '';
-        alert(`欢迎回来，${user}！`);
-        fetchDiaries();
-        fetchFriends();
-    }
-
     async function addFriend(type) {
-        if (!currentUsername) return alert('请先登录！');
+        if (!currentUsername) return;
         const inputId = type === 'PC' ? 'friendInputPC' : 'friendInputMobile';
         const friend = document.getElementById(inputId).value.trim();
         if (!friend) return alert('请输入好友用户名！');
@@ -335,7 +392,7 @@
     }
 
     async function toggleLike(diaryId, isLikedByMe) {
-        if (!currentUsername) return alert('请先登录！');
+        if (!currentUsername) return;
         try {
             if (isLikedByMe) {
                 await mySupabase.from('likes').delete().eq('diary_id', diaryId).eq('username', currentUsername);
@@ -347,7 +404,7 @@
     }
 
     async function saveToCloud(type) {
-        if (!currentUsername) return alert('请先登录！');
+        if (!currentUsername) return;
         const content = document.getElementById(`diaryContent${type}`).value;
         const fileInput = document.getElementById(`imageFile${type}`);
         const isPrivate = document.getElementById(`privateCheckbox${type}`).checked;
@@ -369,29 +426,4 @@
                 content: content, image_url: uploadedImageUrl, username: currentUsername, is_private: isPrivate
             }]);
 
-            alert('🎉 成功！图文日记已同步。');
-            document.getElementById(`diaryContent${type}`).value = '';
-            document.getElementById(`privateCheckbox${type}`).checked = false;
-            fileInput.value = ''; 
-            document.getElementById(`preview${type}`).style.display = 'none';
-            fetchDiaries();
-            if (type === 'Mobile') switchTab('diaries');
-        } catch (err) { alert('保存失败：' + err.message); }
-    }
-
-    async function deleteDiary(diaryId) {
-        if (!confirm('确定要永久删除吗？')) return;
-        await mySupabase.from('diaries').delete().eq('id', diaryId);
-        fetchDiaries();
-    }
-
-    function whisperToTree(type) {
-        const whisper = document.getElementById(`whisperContent${type}`).value;
-        if (!whisper) return alert('写点什么吧！');
-        alert('🍃 呼……风把你的秘密带走啦。');
-        document.getElementById(`whisperContent${type}`).value = '';
-    }
-</script>
-
-</body>
-</html>
+            alert('🎉 成功！图文
