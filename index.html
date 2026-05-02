@@ -557,20 +557,56 @@
         chatTimer = setInterval(() => { fetchMessages(true); }, 3000);
     }
 
+    // 🌟 新增带真实性与去重校验的 addFriend 函数
     async function addFriend(type) {
         if (!currentUsername) return;
         const inputId = type === 'PC' ? 'friendInputPC' : 'friendInputMobile';
         const friend = document.getElementById(inputId).value.trim();
+        
         if (!friend) return alert('请输入好友用户名！');
         if (friend === currentUsername) return alert('不能加自己哦！');
 
         try {
-            await mySupabase.from('friendships').insert([{ user_id: currentUsername, friend_id: friend }]);
+            // 1. 先去数据库的 users 表查询该用户是否存在
+            const { data: targetUser, error: checkError } = await mySupabase
+                .from('users')
+                .select('username')
+                .eq('username', friend)
+                .maybeSingle();
+
+            if (checkError) throw checkError;
+
+            // 2. 如果查不出数据，说明对方根本没有注册过
+            if (!targetUser) {
+                return alert(`❌ 用户 "${friend}" 不存在，请检查拼写是否正确！`);
+            }
+
+            // 3. 检查是否已经关注过该好友
+            const { data: alreadyFriend } = await mySupabase
+                .from('friendships')
+                .select('*')
+                .eq('user_id', currentUsername)
+                .eq('friend_id', friend)
+                .maybeSingle();
+
+            if (alreadyFriend) {
+                return alert('💡 你已经关注过这位好友啦！');
+            }
+
+            // 4. 校验全部通过，正式添加好友
+            const { error: insertError } = await mySupabase
+                .from('friendships')
+                .insert([{ user_id: currentUsername, friend_id: friend }]);
+
+            if (insertError) throw insertError;
+
             alert(`🎉 已成功关注好友：${friend}`);
             document.getElementById(inputId).value = '';
             fetchFriends();
             fetchDiaries(); 
-        } catch (err) { alert('添加失败：可能是对方不存在。'); }
+        } catch (err) { 
+            alert('操作失败：' + err.message); 
+        }
     }
 
     async function removeFriend(friendId) {
