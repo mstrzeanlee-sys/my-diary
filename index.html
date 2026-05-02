@@ -17,16 +17,69 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ================= 主题变量定义 ================= */
+        :root {
+            --bg-color: #f8fafc;
+            --primary-color: #3ecf8e;
+            --whisper-color: #6366f1;
+            --friend-color: #ec4899;
+            --chat-color: #8b5cf6;
+            --profile-color: #14b8a6;
+            --text-color: #334155;
+            --top-bg: #eff6ff;
+            --card-border: #bfdbfe;
+        }
+
+        /* 🌸 浪漫樱花主题 */
+        [data-theme="sakura"] {
+            --bg-color: #fff1f2;
+            --primary-color: #f43f5e;
+            --whisper-color: #fda4af;
+            --friend-color: #ec4899;
+            --chat-color: #fb7185;
+            --profile-color: #f472b6;
+            --text-color: #4c0519;
+            --top-bg: #ffe4e6;
+            --card-border: #fecdd3;
+        }
+
+        /* 💜 极光紫罗兰主题 */
+        [data-theme="violet"] {
+            --bg-color: #f5f3ff;
+            --primary-color: #8b5cf6;
+            --whisper-color: #d946ef;
+            --friend-color: #a855f7;
+            --chat-color: #7c3aed;
+            --profile-color: #c084fc;
+            --text-color: #2e1065;
+            --top-bg: #ede9fe;
+            --card-border: #ddd6fe;
+        }
+
+        /* 🌲 莫兰迪森系主题 */
+        [data-theme="forest"] {
+            --bg-color: #f4f7f6;
+            --primary-color: #14b8a6;
+            --whisper-color: #0d9488;
+            --friend-color: #0f766e;
+            --chat-color: #2dd4bf;
+            --profile-color: #115e59;
+            --text-color: #111827;
+            --top-bg: #e6f4f1;
+            --card-border: #ccebe5;
+        }
+
         /* 1. 全局基础样式 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #f8fafc; margin: 0; color: #334155; padding-bottom: 80px; 
+            background: var(--bg-color); margin: 0; color: var(--text-color); padding-bottom: 80px; 
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         .top-status {
-            background: #eff6ff; padding: 12px 20px; font-size: 14px;
+            background: var(--top-bg); padding: 12px 20px; font-size: 14px;
             display: none; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #bfdbfe; position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 100;
         }
         .user-actions { display: flex; gap: 8px; }
         .logout-btn { 
@@ -65,18 +118,18 @@
         }
 
         h2 { margin-top: 0; margin-bottom: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .diary-title { color: #1e293b; }
-        .treehole-title { color: #6366f1; }
-        .friend-title { color: #ec4899; }
-        .chat-title { color: #8b5cf6; }
-        .profile-title { color: #14b8a6; }
+        .diary-title { color: var(--text-color); }
+        .treehole-title { color: var(--whisper-color); }
+        .friend-title { color: var(--friend-color); }
+        .chat-title { color: var(--chat-color); }
+        .profile-title { color: var(--profile-color); }
 
         textarea { 
             width: 100%; height: 110px; margin: 8px 0; border: 1px solid #e2e8f0; 
             border-radius: 12px; padding: 12px; box-sizing: border-box; font-size: 16px; 
             resize: none; outline: none; background: #fdfdfd; transition: all 0.2s ease;
         }
-        textarea:focus { border-color: #3ecf8e; background: white; }
+        textarea:focus { border-color: var(--primary-color); background: white; }
         
         .file-input-container { margin-bottom: 12px; }
         .image-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; }
@@ -84,12 +137,12 @@
 
         button { 
             width: 100%; padding: 14px; color: white; border: none; border-radius: 12px; 
-            cursor: pointer; font-size: 16px; font-weight: 600;
+            cursor: pointer; font-size: 16px; font-weight: 600; transition: background 0.2s ease;
         }
-        .save-btn { background: #3ecf8e; }
-        .whisper-btn { background: #6366f1; }
-        .friend-btn { background: #ec4899; margin-top: 10px; }
-        .profile-btn { background: #14b8a6; margin-top: 12px; }
+        .save-btn { background: var(--primary-color); }
+        .whisper-btn { background: var(--whisper-color); }
+        .friend-btn { background: var(--friend-color); margin-top: 10px; }
+        .profile-btn { background: var(--profile-color); margin-top: 12px; }
 
         /* 头像样式 */
         .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e2e8f0; }
@@ -103,7 +156,7 @@
         .diary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .diary-user-info { display: flex; align-items: center; gap: 10px; }
         .diary-time { font-size: 12px; color: #94a3b8; }
-        .diary-author { font-size: 14px; color: #1e293b; font-weight: bold; }
+        .diary-author { font-size: 14px; color: var(--text-color); font-weight: bold; }
         .private-badge { font-size: 11px; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .delete-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 20px; width: auto; padding: 0 5px; }
         .diary-text { font-size: 15px; color: #334155; word-break: break-all; line-height: 1.5; margin-top: 6px; }
@@ -127,7 +180,7 @@
             padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;
         }
         .msg { max-width: 75%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-all; }
-        .msg.me { align-self: flex-end; background: #8b5cf6; color: white; border-bottom-right-radius: 2px; }
+        .msg.me { align-self: flex-end; background: var(--chat-color); color: white; border-bottom-right-radius: 2px; }
         .msg.friend { align-self: flex-start; background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 2px; }
 
         /* 好友列表样式 */
@@ -161,7 +214,7 @@
             color: #94a3b8; font-size: 11px; font-weight: 500; cursor: pointer; width: 20%; height: 100%;
         }
         .nav-item .icon { font-size: 18px; margin-bottom: 2px; }
-        .nav-item.active { color: #3b82f6; font-weight: bold; }
+        .nav-item.active { color: var(--primary-color); font-weight: bold; }
 
         /* 💻 电脑端自适应布局样式 */
         @media (min-width: 768px) {
@@ -179,16 +232,16 @@
 </head>
 <body>
 
-<audio id="messageTone" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" preload="auto"></audio>
+<audio id="messageTone" src="https://img.tukuppt.com/newpreview_music/09/00/25/5c89895c276336306.mp3" preload="auto"></audio>
 
 <div id="pageAuth">
     <div class="auth-card">
-        <h1>Echo 日记 & 社交</h1>
+        <h1 id="authTitle">Echo 日记 & 社交</h1>
         <p id="authNotice" style="color: #64748b; font-size: 14px; margin-bottom: 20px;">新用户输入密码即可直接完成注册</p>
         <input type="text" id="usernameInput" class="auth-input" placeholder="输入用户名">
         <input type="password" id="passwordInput" class="auth-input" placeholder="输入你的密码">
-        <button class="auth-btn" onclick="handleAuth()">登 录 / 注 册</button>
-        <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">* 首次登录会自动绑定你输入的密码 *</div>
+        <button id="authBtn" class="auth-btn" onclick="handleAuth()">登 录 / 注 册</button>
+        <div id="authTip" style="font-size: 12px; color: #94a3b8; margin-top: 5px;">* 首次登录会自动绑定你输入的密码 *</div>
     </div>
 </div>
 
@@ -197,31 +250,31 @@
     <div class="top-status">
         <div style="display: flex; align-items: center; gap: 8px;">
             <img id="topAvatar" class="avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="avatar">
-            <div>👤 <span id="currentUserDisplay" style="font-weight:bold; color:#1d4ed8;"></span></div>
+            <div>👤 <span id="currentUserDisplay" style="font-weight:bold; color:var(--text-color);"></span></div>
         </div>
         <div class="user-actions">
-            <button class="logout-btn" onclick="logout()">登出</button>
+            <button id="logoutBtn" class="logout-btn" onclick="logout()">登出</button>
         </div>
     </div>
 
     <div class="content-area">
         <div class="pc-layout">
             <div class="pc-left">
-                <h2>🌍 大家的生活</h2>
+                <h2 id="pcDiaryHeader">🌍 大家的生活</h2>
                 <div id="diaryListPC"></div>
             </div>
 
             <div class="pc-right">
                 <div class="card">
-                    <h2 class="chat-title">💬 好友私聊 & 关注列表</h2>
+                    <h2 class="chat-title" id="pcChatHeader">💬 好友私聊 & 关注列表</h2>
                     
                     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                         <input type="text" id="friendInputPC" style="flex:1; padding:10px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box; font-size: 14px;" placeholder="输入对方用户名添加">
-                        <button style="width:auto; padding:10px 14px; background:#ec4899; font-size:14px;" onclick="addFriend('PC')">关注</button>
+                        <button id="pcFollowBtn" style="width:auto; padding:10px 14px; background:var(--friend-color); font-size:14px;" onclick="addFriend('PC')">关注</button>
                     </div>
 
                     <div class="friend-list" style="margin-bottom: 12px;">
-                        <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #64748b;">已关注的好友：</div>
+                        <div id="pcFriendListLabel" style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #64748b;">已关注的好友：</div>
                         <div id="friendListPC">暂无</div>
                     </div>
 
@@ -229,16 +282,16 @@
                         <option value="">-- 选择一个好友开始聊天 --</option>
                     </select>
                     <div id="chatBoxPC" class="chat-box">
-                        <div style="color: #94a3b8; text-align: center; margin: auto;">请先在上方选择一位好友</div>
+                        <div id="pcChatPlaceholder" style="color: #94a3b8; text-align: center; margin: auto;">请先在上方选择一位好友</div>
                     </div>
                     <div style="display: flex; gap: 8px;">
                         <input type="text" id="chatMsgPC" style="flex:1; padding:12px; border-radius:10px; border:1px solid #cbd5e1; outline:none; font-size:15px;" placeholder="输入消息..." onkeydown="if(event.key==='Enter') sendChat('PC')">
-                        <button style="width:auto; padding:12px 18px; background:#8b5cf6;" onclick="sendChat('PC')">发送</button>
+                        <button id="pcSendBtn" style="width:auto; padding:12px 18px; background:var(--chat-color);" onclick="sendChat('PC')">发送</button>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2 class="diary-title">✍️ 记录日常</h2>
+                    <h2 class="diary-title" id="pcWriteHeader">✍️ 记录日常</h2>
                     <textarea id="diaryContentPC" placeholder="今天发生了什么有趣的事？"></textarea>
                     <div class="file-input-container">
                         <input type="file" id="imageFilePC" accept="image/*" onchange="previewImage(this, 'previewPC')">
@@ -246,47 +299,61 @@
                     </div>
                     <div class="private-toggle">
                         <input type="checkbox" id="privateCheckboxPC">
-                        <label for="privateCheckboxPC">🔒 仅自己可见</label>
+                        <label for="privateCheckboxPC" id="pcPrivateLabel">🔒 仅自己可见</label>
                     </div>
-                    <button class="save-btn" onclick="saveToCloud('PC')">发布到云端</button>
+                    <button id="pcSaveBtn" class="save-btn" onclick="saveToCloud('PC')">发布到云端</button>
                 </div>
 
                 <div class="card">
-                    <h2 class="profile-title">🪪 我的个人资料</h2>
+                    <h2 class="profile-title" id="pcProfileHeader">🪪 我的个人资料</h2>
                     <div style="display: flex; flex-direction: column; align-items: center; background: #f1f5f9; padding: 14px; border-radius: 12px; margin-bottom: 12px; font-size: 14px;">
                         <img id="profileAvatarPC" class="avatar-large" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default">
-                        <div><strong>用户名：</strong> <span id="profileUserPC"></span></div>
+                        <div><strong id="pcProfileUserLabel">用户名：</strong> <span id="profileUserPC"></span></div>
                     </div>
                     
-                    <label style="font-size: 14px; font-weight: bold; color: #64748b;">📤 上传新头像：</label>
+                    <label id="pcThemeLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🎨 切换主题风格：</label>
+                    <select id="themeSelectPC" class="chat-select" style="margin-top: 6px; margin-bottom: 14px;" onchange="changeTheme(this.value)">
+                        <option value="default">默认蓝绿 (Default)</option>
+                        <option value="sakura">浪漫樱花 (Sakura)</option>
+                        <option value="violet">极光紫罗兰 (Violet)</option>
+                        <option value="forest">莫兰迪森系 (Forest)</option>
+                    </select>
+
+                    <label id="pcLangLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🌐 切换语言：</label>
+                    <select id="langSelectPC" class="chat-select" style="margin-top: 6px; margin-bottom: 14px;" onchange="changeLang(this.value)">
+                        <option value="zh">简体中文 (Chinese)</option>
+                        <option value="en">English</option>
+                    </select>
+
+                    <label id="pcAvatarLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">📤 上传新头像：</label>
                     <input type="file" id="avatarFileInputPC" accept="image/*" style="margin-top: 6px; margin-bottom: 14px;">
                     
-                    <label style="font-size: 14px; font-weight: bold; color: #64748b;">个性签名：</label>
+                    <label id="pcBioLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">个性签名：</label>
                     <textarea id="bioInputPC" style="height: 60px; margin-top: 6px;" placeholder="写一段个性的签名吧..."></textarea>
-                    <button class="profile-btn" onclick="updateProfile('PC')">更新个人资料</button>
+                    <button id="pcSaveProfileBtn" class="profile-btn" onclick="updateProfile('PC')">更新个人资料</button>
                     
                     <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
-                    <label style="font-size: 14px; font-weight: bold; color: #64748b;">修改新密码：</label>
+                    <label id="pcPwdLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">修改新密码：</label>
                     <input type="password" id="newPwdInputPC" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 6px; box-sizing: border-box;" placeholder="输入新密码">
-                    <button style="background: #64748b; margin-top: 12px;" onclick="changePassword('PC')">修改密码</button>
+                    <button id="pcSavePwdBtn" style="background: #64748b; margin-top: 12px;" onclick="changePassword('PC')">修改密码</button>
                 </div>
 
                 <div class="card">
-                    <h2 class="treehole-title">🍃 情绪树洞</h2>
+                    <h2 class="treehole-title" id="pcTreeholeHeader">🍃 情绪树洞</h2>
                     <textarea id="whisperContentPC" placeholder="秘密写在这里，丢进树洞瞬间消失..."></textarea>
-                    <button class="whisper-btn" onclick="whisperToTree('PC')">丢进树洞</button>
+                    <button id="pcTreeBtn" class="whisper-btn" onclick="whisperToTree('PC')">丢进树洞</button>
                 </div>
             </div>
         </div>
 
         <div id="pageDiaries" class="page active">
-            <h2>🌍 大家的生活</h2>
+            <h2 id="mbDiaryHeader">🌍 大家的生活</h2>
             <div id="diaryListMobile"></div>
         </div>
 
         <div id="pageWrite" class="page">
             <div class="card">
-                <h2 class="diary-title">✍️ 记录精彩瞬间</h2>
+                <h2 class="diary-title" id="mbWriteHeader">✍️ 记录精彩瞬间</h2>
                 <textarea id="diaryContentMobile" placeholder="今天发生了什么有趣的事？"></textarea>
                 <div class="file-input-container">
                     <input type="file" id="imageFileMobile" accept="image/*" onchange="previewImage(this, 'previewMobile')">
@@ -294,23 +361,23 @@
                 </div>
                 <div class="private-toggle">
                     <input type="checkbox" id="privateCheckboxMobile">
-                    <label for="privateCheckboxMobile">🔒 仅自己可见</label>
+                    <label for="privateCheckboxMobile" id="mbPrivateLabel">🔒 仅自己可见</label>
                 </div>
-                <button class="save-btn" onclick="saveToCloud('Mobile')">保存到云端</button>
+                <button id="mbSaveBtn" class="save-btn" onclick="saveToCloud('Mobile')">保存到云端</button>
             </div>
         </div>
 
         <div id="pageChat" class="page">
             <div class="card">
-                <h2 class="chat-title">💬 好友私聊 & 关注列表</h2>
+                <h2 class="chat-title" id="mbChatHeader">💬 好友私聊 & 关注列表</h2>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                     <input type="text" id="friendInputMobile" style="flex:1; padding:10px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box; font-size: 14px;" placeholder="输入对方用户名添加">
-                    <button style="width:auto; padding:10px 14px; background:#ec4899; font-size:14px;" onclick="addFriend('Mobile')">关注</button>
+                    <button id="mbFollowBtn" style="width:auto; padding:10px 14px; background:var(--friend-color); font-size:14px;" onclick="addFriend('Mobile')">关注</button>
                 </div>
 
                 <div class="friend-list" style="margin-bottom: 12px;">
-                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #64748b;">已关注的好友：</div>
+                    <div id="mbFriendListLabel" style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #64748b;">已关注的好友：</div>
                     <div id="friendListMobile">暂无</div>
                 </div>
 
@@ -318,43 +385,57 @@
                     <option value="">-- 选择一个好友开始聊天 --</option>
                 </select>
                 <div id="chatBoxMobile" class="chat-box">
-                    <div style="color: #94a3b8; text-align: center; margin: auto;">请先在上方选择一位好友</div>
+                    <div id="mbChatPlaceholder" style="color: #94a3b8; text-align: center; margin: auto;">请先在上方选择一位好友</div>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="chatMsgMobile" style="flex:1; padding:12px; border-radius:10px; border:1px solid #cbd5e1; outline:none; font-size:15px;" placeholder="输入消息..." onkeydown="if(event.key==='Enter') sendChat('Mobile')">
-                    <button style="width:auto; padding:12px 18px; background:#8b5cf6;" onclick="sendChat('Mobile')">发送</button>
+                    <button id="mbSendBtn" style="width:auto; padding:12px 18px; background:var(--chat-color);" onclick="sendChat('Mobile')">发送</button>
                 </div>
             </div>
         </div>
 
         <div id="pageTreehole" class="page">
             <div class="card">
-                <h2 class="treehole-title">🍃 情绪树洞</h2>
+                <h2 class="treehole-title" id="mbTreeholeHeader">🍃 情绪树洞</h2>
                 <textarea id="whisperContentMobile" placeholder="吐槽写在这里，丢进树洞瞬间消失..."></textarea>
-                <button class="whisper-btn" onclick="whisperToTree('Mobile')">丢进树洞</button>
+                <button id="mbTreeBtn" class="whisper-btn" onclick="whisperToTree('Mobile')">丢进树洞</button>
             </div>
         </div>
 
         <div id="pageProfile" class="page">
             <div class="card">
-                <h2 class="profile-title">🪪 我的个人资料</h2>
+                <h2 class="profile-title" id="mbProfileHeader">🪪 我的个人资料</h2>
                 <div style="display: flex; flex-direction: column; align-items: center; background: #f1f5f9; padding: 16px; border-radius: 12px; margin-bottom: 16px; font-size: 15px;">
                     <img id="profileAvatarMobile" class="avatar-large" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default">
-                    <div><strong>用户名：</strong> <span id="profileUserMobile"></span></div>
+                    <div><strong id="mbProfileUserLabel">用户名：</strong> <span id="profileUserMobile"></span></div>
                 </div>
                 
-                <label style="font-size: 14px; font-weight: bold; color: #64748b;">📤 上传新头像：</label>
+                <label id="mbThemeLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🎨 切换主题风格：</label>
+                <select id="themeSelectMobile" class="chat-select" style="margin-top: 6px; margin-bottom: 14px;" onchange="changeTheme(this.value)">
+                    <option value="default">默认蓝绿 (Default)</option>
+                    <option value="sakura">浪漫樱花 (Sakura)</option>
+                    <option value="violet">极光紫罗兰 (Violet)</option>
+                    <option value="forest">莫兰迪森系 (Forest)</option>
+                </select>
+
+                <label id="mbLangLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🌐 切换语言：</label>
+                <select id="langSelectMobile" class="chat-select" style="margin-top: 6px; margin-bottom: 14px;" onchange="changeLang(this.value)">
+                    <option value="zh">简体中文 (Chinese)</option>
+                    <option value="en">English</option>
+                </select>
+
+                <label id="mbAvatarLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">📤 上传新头像：</label>
                 <input type="file" id="avatarFileInputMobile" accept="image/*" style="margin-top: 6px; margin-bottom: 14px;">
 
-                <label style="font-size: 14px; font-weight: bold; color: #64748b;">个性签名：</label>
+                <label id="mbBioLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">个性签名：</label>
                 <textarea id="bioInputMobile" style="height: 70px; margin-top: 6px;" placeholder="写一段个性的签名吧..."></textarea>
-                <button class="profile-btn" onclick="updateProfile('Mobile')">保存资料</button>
+                <button id="mbSaveProfileBtn" class="profile-btn" onclick="updateProfile('Mobile')">保存资料</button>
 
                 <hr style="margin: 24px 0; border: none; border-top: 1px solid #e2e8f0;">
                 
-                <label style="font-size: 14px; font-weight: bold; color: #64748b;">修改新密码：</label>
+                <label id="mbPwdLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">修改新密码：</label>
                 <input type="password" id="newPwdInputMobile" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 6px; box-sizing: border-box;" placeholder="输入新密码">
-                <button style="background: #64748b; margin-top: 12px;" onclick="changePassword('Mobile')">修改密码</button>
+                <button id="mbSavePwdBtn" style="background: #64748b; margin-top: 12px;" onclick="changePassword('Mobile')">修改密码</button>
             </div>
         </div>
 
@@ -362,19 +443,19 @@
 
     <div class="bottom-nav">
         <div class="nav-item active" id="btnNavDiaries" onclick="switchTab('diaries')">
-            <span class="icon">🌍</span><span>日记圈</span>
+            <span class="icon">🌍</span><span id="navTextDiaries">日记圈</span>
         </div>
         <div class="nav-item" id="btnNavWrite" onclick="switchTab('write')">
-            <span class="icon">✍️</span><span>写日记</span>
+            <span class="icon">✍️</span><span id="navTextWrite">写日记</span>
         </div>
         <div class="nav-item" id="btnNavChat" onclick="switchTab('chat')">
-            <span class="icon">💬</span><span>私聊</span>
+            <span class="icon">💬</span><span id="navTextChat">私聊</span>
         </div>
         <div class="nav-item" id="btnNavTreehole" onclick="switchTab('treehole')">
-            <span class="icon">🍃</span><span>树洞</span>
+            <span class="icon">🍃</span><span id="navTextTreehole">树洞</span>
         </div>
         <div class="nav-item" id="btnNavProfile" onclick="switchTab('profile')">
-            <span class="icon">🪪</span><span>资料</span>
+            <span class="icon">🪪</span><span id="navTextProfile">资料</span>
         </div>
     </div>
 </div>
@@ -389,7 +470,209 @@
     let chatTimer = null;
     let lastMessageCount = 0;
 
-    window.onload = function() { checkAuth(); };
+    // ================= 多语言文本字典 =================
+    const i18n = {
+        zh: {
+            authTitle: "Echo 日记 & 社交",
+            authNotice: "新用户输入密码即可直接完成注册",
+            userPlaceholder: "输入用户名",
+            pwdPlaceholder: "输入你的密码",
+            authBtn: "登 录 / 注 册",
+            authTip: "* 首次登录会自动绑定你输入的密码 *",
+            logout: "登出",
+            diariesHeader: "🌍 大家的生活",
+            chatHeader: "💬 好友私聊 & 关注列表",
+            follow: "关注",
+            friendListLabel: "已关注的好友：",
+            chatSelectTip: "-- 选择一个好友开始聊天 --",
+            chatPlaceholder: "请先在上方选择一位好友",
+            chatInput: "输入消息...",
+            send: "发送",
+            writeHeader: "✍️ 记录日常",
+            diaryPlaceholder: "今天发生了什么有趣的事？",
+            private: "🔒 仅自己可见",
+            saveToCloud: "发布到云端",
+            profileHeader: "🪪 我的个人资料",
+            userLabel: "用户名：",
+            themeLabel: "🎨 切换主题风格：",
+            langLabel: "🌐 切换语言：",
+            avatarLabel: "📤 上传新头像：",
+            bioLabel: "个性签名：",
+            bioPlaceholder: "写一段个性的签名吧...",
+            saveProfile: "更新个人资料",
+            pwdLabel: "修改新密码：",
+            newPwdPlaceholder: "输入新密码",
+            savePwd: "修改密码",
+            treeholeHeader: "🍃 情绪树洞",
+            treePlaceholder: "秘密写在这里，丢进树洞瞬间消失...",
+            throwToTree: "丢进树洞",
+            navDiaries: "日记圈",
+            navWrite: "写日记",
+            navChat: "私聊",
+            navTreehole: "树洞",
+            navProfile: "资料",
+            noFriends: "暂无关注好友",
+            confirmDelFriend: "确定要取消关注并删除好友吗？",
+            confirmLogout: "确定要登出当前账号吗？",
+            noMsgTip: "没有消息，开始聊点什么吧！"
+        },
+        en: {
+            authTitle: "Echo Diary & Chat",
+            authNotice: "New users enter a password to register instantly.",
+            userPlaceholder: "Username",
+            pwdPlaceholder: "Password",
+            authBtn: "Login / Register",
+            authTip: "* First-time login auto-binds your password *",
+            logout: "Logout",
+            diariesHeader: "🌍 Discover Stories",
+            chatHeader: "💬 Direct Chats & Friends",
+            follow: "Follow",
+            friendListLabel: "Following List:",
+            chatSelectTip: "-- Select a friend to start chat --",
+            chatPlaceholder: "Select a friend above to chat",
+            chatInput: "Type a message...",
+            send: "Send",
+            writeHeader: "✍️ Write Diary",
+            diaryPlaceholder: "What's on your mind today?",
+            private: "🔒 Private Only",
+            saveToCloud: "Save to Cloud",
+            profileHeader: "🪪 My Profile",
+            userLabel: "Username: ",
+            themeLabel: "🎨 Select Theme Style:",
+            langLabel: "🌐 Select Language:",
+            avatarLabel: "📤 Upload New Avatar:",
+            bioLabel: "Bio/Status:",
+            bioPlaceholder: "Say something about yourself...",
+            saveProfile: "Save Profile",
+            pwdLabel: "Change Password:",
+            newPwdPlaceholder: "New password",
+            savePwd: "Update Password",
+            treeholeHeader: "🍃 Secret Treehole",
+            treePlaceholder: "Drop your secrets here and let them fly away...",
+            throwToTree: "Throw In",
+            navDiaries: "Feed",
+            navWrite: "Write",
+            navChat: "Chat",
+            navTreehole: "Hole",
+            navProfile: "Me",
+            noFriends: "No following friends yet",
+            confirmDelFriend: "Are you sure you want to unfollow this friend?",
+            confirmLogout: "Are you sure you want to logout?",
+            noMsgTip: "No messages yet, let's start chatting!"
+        }
+    };
+
+    window.onload = function() { 
+        loadSavedTheme(); 
+        loadSavedLang();
+        checkAuth(); 
+    };
+
+    // 🌐 多语言功能：切换语言
+    function changeLang(langCode) {
+        localStorage.setItem('user_lang', langCode);
+        document.getElementById('langSelectPC').value = langCode;
+        document.getElementById('langSelectMobile').value = langCode;
+
+        const text = i18n[langCode];
+
+        // 登录页翻译
+        document.getElementById('authTitle').innerText = text.authTitle;
+        document.getElementById('authNotice').innerText = text.authNotice;
+        document.getElementById('usernameInput').placeholder = text.userPlaceholder;
+        document.getElementById('passwordInput').placeholder = text.pwdPlaceholder;
+        document.getElementById('authBtn').innerText = text.authBtn;
+        document.getElementById('authTip').innerText = text.authTip;
+
+        // 公用顶栏
+        document.getElementById('logoutBtn').innerText = text.logout;
+
+        // 电脑端内容翻译
+        document.getElementById('pcDiaryHeader').innerText = text.diariesHeader;
+        document.getElementById('pcChatHeader').innerText = text.chatHeader;
+        document.getElementById('pcFollowBtn').innerText = text.follow;
+        document.getElementById('pcFriendListLabel').innerText = text.friendListLabel;
+        document.getElementById('chatMsgPC').placeholder = text.chatInput;
+        document.getElementById('pcSendBtn').innerText = text.send;
+        document.getElementById('pcWriteHeader').innerText = text.writeHeader;
+        document.getElementById('diaryContentPC').placeholder = text.diaryPlaceholder;
+        document.getElementById('pcPrivateLabel').innerText = text.private;
+        document.getElementById('pcSaveBtn').innerText = text.saveToCloud;
+        document.getElementById('pcProfileHeader').innerText = text.profileHeader;
+        document.getElementById('pcProfileUserLabel').innerText = text.userLabel;
+        document.getElementById('pcThemeLabel').innerText = text.themeLabel;
+        document.getElementById('pcLangLabel').innerText = text.langLabel;
+        document.getElementById('pcAvatarLabel').innerText = text.avatarLabel;
+        document.getElementById('pcBioLabel').innerText = text.bioLabel;
+        document.getElementById('bioInputPC').placeholder = text.bioPlaceholder;
+        document.getElementById('pcSaveProfileBtn').innerText = text.saveProfile;
+        document.getElementById('pcPwdLabel').innerText = text.pwdLabel;
+        document.getElementById('newPwdInputPC').placeholder = text.newPwdPlaceholder;
+        document.getElementById('pcSavePwdBtn').innerText = text.savePwd;
+        document.getElementById('pcTreeholeHeader').innerText = text.treeholeHeader;
+        document.getElementById('whisperContentPC').placeholder = text.treePlaceholder;
+        document.getElementById('pcTreeBtn').innerText = text.throwToTree;
+
+        // 手机端内容翻译
+        document.getElementById('mbDiaryHeader').innerText = text.diariesHeader;
+        document.getElementById('mbWriteHeader').innerText = text.writeHeader;
+        document.getElementById('diaryContentMobile').placeholder = text.diaryPlaceholder;
+        document.getElementById('mbPrivateLabel').innerText = text.private;
+        document.getElementById('mbSaveBtn').innerText = text.saveToCloud;
+        document.getElementById('mbChatHeader').innerText = text.chatHeader;
+        document.getElementById('mbFollowBtn').innerText = text.follow;
+        document.getElementById('mbFriendListLabel').innerText = text.friendListLabel;
+        document.getElementById('chatMsgMobile').placeholder = text.chatInput;
+        document.getElementById('mbSendBtn').innerText = text.send;
+        document.getElementById('mbTreeholeHeader').innerText = text.treeholeHeader;
+        document.getElementById('whisperContentMobile').placeholder = text.treePlaceholder;
+        document.getElementById('mbTreeBtn').innerText = text.throwToTree;
+        document.getElementById('mbProfileHeader').innerText = text.profileHeader;
+        document.getElementById('mbProfileUserLabel').innerText = text.userLabel;
+        document.getElementById('mbThemeLabel').innerText = text.themeLabel;
+        document.getElementById('mbLangLabel').innerText = text.langLabel;
+        document.getElementById('mbAvatarLabel').innerText = text.avatarLabel;
+        document.getElementById('mbBioLabel').innerText = text.bioLabel;
+        document.getElementById('bioInputMobile').placeholder = text.bioPlaceholder;
+        document.getElementById('mbSaveProfileBtn').innerText = text.saveProfile;
+        document.getElementById('mbPwdLabel').innerText = text.pwdLabel;
+        document.getElementById('newPwdInputMobile').placeholder = text.newPwdPlaceholder;
+        document.getElementById('mbSavePwdBtn').innerText = text.savePwd;
+
+        // 手机端底部导航翻译
+        document.getElementById('navTextDiaries').innerText = text.navDiaries;
+        document.getElementById('navTextWrite').innerText = text.navWrite;
+        document.getElementById('navTextChat').innerText = text.navChat;
+        document.getElementById('navTextTreehole').innerText = text.navTreehole;
+        document.getElementById('navTextProfile').innerText = text.navProfile;
+
+        // 动态刷新数据文案
+        fetchFriends();
+        fetchDiaries();
+    }
+
+    function loadSavedLang() {
+        const savedLang = localStorage.getItem('user_lang') || 'zh';
+        changeLang(savedLang);
+    }
+
+    // 🎨 主题切换
+    function changeTheme(themeName) {
+        if (themeName === 'default') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', themeName);
+        }
+        localStorage.setItem('user_theme', themeName);
+        
+        document.getElementById('themeSelectPC').value = themeName;
+        document.getElementById('themeSelectMobile').value = themeName;
+    }
+
+    function loadSavedTheme() {
+        const savedTheme = localStorage.getItem('user_theme') || 'default';
+        changeTheme(savedTheme);
+    }
 
     function checkAuth() {
         if (currentUsername) {
@@ -426,21 +709,21 @@
 
             if (existUser) {
                 if (existUser.password === pass) {
-                    alert(`🎉 登录成功！欢迎回来，${user}。`);
+                    alert('🎉 Success!');
                     completeLogin(user);
                 } else {
-                    alert('❌ 密码错误，请重试！');
+                    alert('❌ Password Error!');
                 }
             } else {
                 const { error: insertErr } = await mySupabase
                     .from('users').insert([{ username: user, password: pass }]);
 
                 if (insertErr) throw insertErr;
-                alert(`🎉 注册成功！已使用你输入的密码创建账号。`);
+                alert('🎉 Register Success!');
                 completeLogin(user);
             }
         } catch (err) {
-            alert('操作失败，请检查网络：' + err.message);
+            alert('Error: ' + err.message);
         }
     }
 
@@ -490,25 +773,25 @@
             const { error: updateError } = await mySupabase.from('users').update(updateData).eq('username', currentUsername);
             if (updateError) throw updateError;
             
-            alert('🎉 个人资料已成功保存！');
+            alert('🎉 Done!');
             fileInput.value = '';
             fetchProfile();
             fetchDiaries(); 
-        } catch (err) { alert('更新失败：' + err.message); }
+        } catch (err) { alert('Failed: ' + err.message); }
     }
 
     async function changePassword(type) {
         if (!currentUsername) return;
         const inputId = type === 'PC' ? 'newPwdInputPC' : 'newPwdInputMobile';
         const newPwd = document.getElementById(inputId).value.trim();
-        if (!newPwd) return alert('请输入新密码！');
+        if (!newPwd) return alert('No Password provided!');
 
         try {
             const { error } = await mySupabase.from('users').update({ password: newPwd }).eq('username', currentUsername);
             if (error) throw error;
-            alert('🔑 密码修改成功！');
+            alert('🔑 Password Changed!');
             document.getElementById(inputId).value = '';
-        } catch (err) { alert('修改失败：' + err.message); }
+        } catch (err) { alert('Failed: ' + err.message); }
     }
 
     function completeLogin(user) {
@@ -520,7 +803,8 @@
     }
 
     function logout() {
-        if (!confirm('确定要登出当前账号吗？')) return;
+        const lang = localStorage.getItem('user_lang') || 'zh';
+        if (!confirm(i18n[lang].confirmLogout)) return;
         localStorage.removeItem('chat_username');
         currentUsername = '';
         checkAuth();
@@ -557,61 +841,49 @@
         chatTimer = setInterval(() => { fetchMessages(true); }, 3000);
     }
 
-    // 🌟 新增带真实性与去重校验的 addFriend 函数
     async function addFriend(type) {
         if (!currentUsername) return;
         const inputId = type === 'PC' ? 'friendInputPC' : 'friendInputMobile';
         const friend = document.getElementById(inputId).value.trim();
         
-        if (!friend) return alert('请输入好友用户名！');
-        if (friend === currentUsername) return alert('不能加自己哦！');
+        if (!friend) return alert('Name Empty!');
+        if (friend === currentUsername) return alert('Can\'t follow yourself.');
 
         try {
-            // 1. 先去数据库的 users 表查询该用户是否存在
             const { data: targetUser, error: checkError } = await mySupabase
-                .from('users')
-                .select('username')
-                .eq('username', friend)
-                .maybeSingle();
+                .from('users').select('username').eq('username', friend).maybeSingle();
 
             if (checkError) throw checkError;
 
-            // 2. 如果查不出数据，说明对方根本没有注册过
             if (!targetUser) {
-                return alert(`❌ 用户 "${friend}" 不存在，请检查拼写是否正确！`);
+                return alert(`❌ User "${friend}" not found!`);
             }
 
-            // 3. 检查是否已经关注过该好友
             const { data: alreadyFriend } = await mySupabase
-                .from('friendships')
-                .select('*')
-                .eq('user_id', currentUsername)
-                .eq('friend_id', friend)
-                .maybeSingle();
+                .from('friendships').select('*').eq('user_id', currentUsername).eq('friend_id', friend).maybeSingle();
 
             if (alreadyFriend) {
-                return alert('💡 你已经关注过这位好友啦！');
+                return alert('💡 Already added!');
             }
 
-            // 4. 校验全部通过，正式添加好友
             const { error: insertError } = await mySupabase
-                .from('friendships')
-                .insert([{ user_id: currentUsername, friend_id: friend }]);
+                .from('friendships').insert([{ user_id: currentUsername, friend_id: friend }]);
 
             if (insertError) throw insertError;
 
-            alert(`🎉 已成功关注好友：${friend}`);
+            alert(`🎉 Done following: ${friend}`);
             document.getElementById(inputId).value = '';
             fetchFriends();
             fetchDiaries(); 
         } catch (err) { 
-            alert('操作失败：' + err.message); 
+            alert('Failed: ' + err.message); 
         }
     }
 
     async function removeFriend(friendId) {
         if (!currentUsername) return;
-        if (!confirm(`确定要取消关注并删除好友 ${friendId} 吗？`)) return;
+        const lang = localStorage.getItem('user_lang') || 'zh';
+        if (!confirm(i18n[lang].confirmDelFriend)) return;
 
         try {
             const { error } = await mySupabase
@@ -621,7 +893,7 @@
                 .eq('friend_id', friendId);
 
             if (error) throw error;
-            alert(`👋 已成功删除好友 ${friendId}`);
+            alert(`👋 Removed: ${friendId}`);
             
             if (currentPartner === friendId) {
                 currentPartner = '';
@@ -630,23 +902,24 @@
 
             fetchFriends();
             fetchDiaries(); 
-        } catch (err) { alert('删除失败：' + err.message); }
+        } catch (err) { alert('Failed: ' + err.message); }
     }
 
     async function fetchFriends() {
         if (!currentUsername) return;
+        const lang = localStorage.getItem('user_lang') || 'zh';
+        const text = i18n[lang];
+
         const { data } = await mySupabase.from('friendships').select('friend_id').eq('user_id', currentUsername);
 
-        // 下拉菜单
         const selectPC = document.getElementById('chatSelectPC');
         const selectMobile = document.getElementById('chatSelectMobile');
-        const optionsHtml = `<option value="">-- 选择一个好友开始聊天 --</option>` + 
+        const optionsHtml = `<option value="">${text.chatSelectTip}</option>` + 
             (data ? data.map(item => `<option value="${item.friend_id}">${item.friend_id}</option>`).join('') : '');
 
         selectPC.innerHTML = optionsHtml;
         selectMobile.innerHTML = optionsHtml;
 
-        // 绑定删除按钮的好友列表
         const listPC = document.getElementById('friendListPC');
         const listMobile = document.getElementById('friendListMobile');
 
@@ -654,13 +927,13 @@
             const itemsHtml = data.map(item => `
                 <div class="friend-item">
                     <span>👤 <strong>${item.friend_id}</strong></span>
-                    <button class="remove-friend-btn" onclick="removeFriend('${item.friend_id}')">删除</button>
+                    <button class="remove-friend-btn" onclick="removeFriend('${item.friend_id}')">×</button>
                 </div>
             `).join('');
             listPC.innerHTML = itemsHtml;
             listMobile.innerHTML = itemsHtml;
         } else {
-            const emptyHtml = `<div style="color:#94a3b8; font-size:13px; text-align:center;">暂无关注好友</div>`;
+            const emptyHtml = `<div style="color:#94a3b8; font-size:13px; text-align:center;">${text.noFriends}</div>`;
             listPC.innerHTML = emptyHtml;
             listMobile.innerHTML = emptyHtml;
         }
@@ -675,6 +948,9 @@
 
     async function fetchMessages(isPolling = false) {
         if (!currentUsername || !currentPartner) return;
+        const lang = localStorage.getItem('user_lang') || 'zh';
+        const text = i18n[lang];
+
         try {
             const { data } = await mySupabase
                 .from('messages').select('*')
@@ -703,7 +979,7 @@
                 }
                 lastMessageCount = data.length; 
             } else {
-                const emptyHtml = `<div style="color:#94a3b8; text-align:center; margin:auto;">没有消息，开始聊点什么吧！</div>`;
+                const emptyHtml = `<div style="color:#94a3b8; text-align:center; margin:auto;">${text.noMsgTip}</div>`;
                 chatBoxPC.innerHTML = emptyHtml;
                 chatBoxMobile.innerHTML = emptyHtml;
                 lastMessageCount = 0;
@@ -715,7 +991,7 @@
         const tone = document.getElementById('messageTone');
         if (tone) {
             tone.currentTime = 0; 
-            tone.play().catch(err => console.log('音频播放受限，需要页面产生交互：', err));
+            tone.play().catch(err => console.log('Audio Autoplay Blocked:', err));
         }
     }
 
@@ -753,14 +1029,14 @@
             const html = filteredDiaries.map(item => {
                 const date = new Date(item.created_at).toLocaleString('zh-CN');
                 let imageHtml = item.image_url ? `<img src="${item.image_url}" class="diary-img">` : '';
-                const privateBadgeHtml = item.is_private ? `<span class="private-badge">🔒 仅自己可见</span>` : '';
+                const privateBadgeHtml = item.is_private ? `<span class="private-badge">🔒 Private</span>` : '';
                 const deleteBtnHtml = item.username === currentUsername ? `<button class="delete-btn" onclick="deleteDiary('${item.id}')">×</button>` : '';
                 const itemLikes = likesData ? likesData.filter(l => l.diary_id == item.id) : [];
                 const isLikedByMe = itemLikes.some(l => l.username === currentUsername);
                 const likeBtnClass = isLikedByMe ? 'like-btn liked' : 'like-btn';
 
                 const authorInfo = authorsInfo ? authorsInfo.find(u => u.username === item.username) : null;
-                const authorBioText = authorInfo && authorInfo.bio ? authorInfo.bio : '这个家伙很懒，什么都没有留下。';
+                const authorBioText = authorInfo && authorInfo.bio ? authorInfo.bio : '💭 ...';
                 const authorAvatar = authorInfo && authorInfo.avatar_url ? authorInfo.avatar_url : 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
 
                 return `
@@ -769,7 +1045,7 @@
                             <div class="diary-user-info">
                                 <img src="${authorAvatar}" class="avatar">
                                 <div>
-                                    <span class="diary-author">${item.username || '神秘人'}</span> 
+                                    <span class="diary-author">${item.username || 'Mysterious'}</span> 
                                     ${privateBadgeHtml}
                                     <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">💭 ${authorBioText}</div>
                                 </div>
@@ -781,7 +1057,7 @@
                         ${imageHtml}
                         <div class="diary-footer">
                             <button class="${likeBtnClass}" onclick="toggleLike(${item.id}, ${isLikedByMe})">
-                                ❤️ ${itemLikes.length > 0 ? itemLikes.length : '赞'}
+                                ❤️ ${itemLikes.length > 0 ? itemLikes.length : 'Like'}
                             </button>
                         </div>
                     </div>
@@ -811,7 +1087,7 @@
         const fileInput = document.getElementById(`imageFile${type}`);
         const isPrivate = document.getElementById(`privateCheckbox${type}`).checked;
 
-        if (!content && !fileInput.files[0]) return alert('还没写内容或选择图片呢！');
+        if (!content && !fileInput.files[0]) return alert('Empty contents!');
 
         try {
             let uploadedImageUrl = null;
@@ -828,26 +1104,26 @@
                 content: content, image_url: uploadedImageUrl, username: currentUsername, is_private: isPrivate
             }]);
 
-            alert('🎉 成功！图文日记已同步。');
+            alert('🎉 Post Saved!');
             document.getElementById(`diaryContent${type}`).value = '';
             document.getElementById(`privateCheckbox${type}`).checked = false;
             fileInput.value = ''; 
             document.getElementById(`preview${type}`).style.display = 'none';
             fetchDiaries();
             if (type === 'Mobile') switchTab('diaries');
-        } catch (err) { alert('保存失败：' + err.message); }
+        } catch (err) { alert('Failed: ' + err.message); }
     }
 
     async function deleteDiary(diaryId) {
-        if (!confirm('确定要永久删除吗？')) return;
+        if (!confirm('Are you sure?')) return;
         await mySupabase.from('diaries').delete().eq('id', diaryId);
         fetchDiaries();
     }
 
     function whisperToTree(type) {
         const whisper = document.getElementById(`whisperContent${type}`).value;
-        if (!whisper) return alert('写点什么吧！');
-        alert('🍃 呼……风把你的秘密带走啦。');
+        if (!whisper) return alert('Say something!');
+        alert('🍃 Sent to treehole!');
         document.getElementById(`whisperContent${type}`).value = '';
     }
 
