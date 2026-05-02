@@ -28,6 +28,9 @@
             --text-color: #334155;
             --top-bg: #eff6ff;
             --card-border: #bfdbfe;
+            /* 🌿 默认主题植物元素 */
+            --plant-top-right: "🌿";
+            --plant-bottom-left: "🍀";
         }
 
         /* 🌸 浪漫樱花主题 */
@@ -41,6 +44,9 @@
             --text-color: #4c0519;
             --top-bg: #ffe4e6;
             --card-border: #fecdd3;
+            /* 🌸 樱花主题植物元素 */
+            --plant-top-right: "🌸";
+            --plant-bottom-left: "💮";
         }
 
         /* 💜 极光紫罗兰主题 */
@@ -54,6 +60,9 @@
             --text-color: #2e1065;
             --top-bg: #ede9fe;
             --card-border: #ddd6fe;
+            /* 💜 紫色主题植物元素 */
+            --plant-top-right: "🔮";
+            --plant-bottom-left: "🍇";
         }
 
         /* 🌲 莫兰迪森系主题 */
@@ -67,13 +76,42 @@
             --text-color: #111827;
             --top-bg: #e6f4f1;
             --card-border: #ccebe5;
+            /* 🌲 森系主题植物元素 */
+            --plant-top-right: "🌲";
+            --plant-bottom-left: "🍃";
         }
 
-        /* 1. 全局基础样式 */
+        /* 1. 全局基础样式与植物背景装饰 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg-color); margin: 0; color: var(--text-color); padding-bottom: 80px; 
             transition: background 0.3s ease, color 0.3s ease;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 🍃 跟着主题变化的植物浮动背景 */
+        body::before, body::after {
+            position: fixed;
+            font-size: 110px;
+            opacity: 0.12;
+            z-index: -1;
+            pointer-events: none;
+            user-select: none;
+            transition: all 0.5s ease;
+        }
+        body::before {
+            content: var(--plant-top-right);
+            top: 60px;
+            right: -20px;
+            transform: rotate(15deg);
+        }
+        body::after {
+            content: var(--plant-bottom-left);
+            bottom: 80px;
+            left: -20px;
+            transform: rotate(-15deg);
         }
 
         .top-status {
@@ -96,6 +134,11 @@
             background: white; padding: 32px; border-radius: 20px; 
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
             width: 100%; max-width: 380px; text-align: center; box-sizing: border-box;
+            position: relative; overflow: hidden;
+        }
+        /* 登录页植物点缀 */
+        .auth-card::before {
+            content: "🌱"; position: absolute; top: -10px; left: -10px; font-size: 40px; opacity: 0.15;
         }
         .auth-input {
             width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #cbd5e1; 
@@ -110,11 +153,13 @@
         #mainContent { display: none; }
         .content-area { padding: 16px; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
 
-        /* 通用卡片 */
+        /* 通用卡片加上植物装饰细节 */
         .card { 
             background: white; padding: 24px; border-radius: 16px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             width: 100%; box-sizing: border-box; margin-bottom: 20px;
+            position: relative;
+            backdrop-filter: blur(8px);
         }
 
         h2 { margin-top: 0; margin-bottom: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
@@ -192,6 +237,13 @@
             display: flex; justify-content: space-between; align-items: center;
             background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px;
             border: 1px solid #f1f5f9; font-size: 14px;
+        }
+        /* 可点击的名字样式 */
+        .friend-name-link {
+            cursor: pointer; color: var(--text-color); font-weight: bold; padding: 4px 0; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .friend-name-link:hover {
+            color: var(--primary-color); text-decoration: underline;
         }
         .remove-friend-btn {
             background: #fecaca; color: #b91c1c; border: none; padding: 6px 12px;
@@ -313,10 +365,10 @@
                     
                     <label id="pcThemeLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🎨 切换主题风格：</label>
                     <select id="themeSelectPC" class="chat-select" style="margin-top: 6px; margin-bottom: 14px;" onchange="changeTheme(this.value)">
-                        <option value="default">默认蓝绿 (Default)</option>
-                        <option value="sakura">浪漫樱花 (Sakura)</option>
-                        <option value="violet">极光紫罗兰 (Violet)</option>
-                        <option value="forest">莫兰迪森系 (Forest)</option>
+                        <option value="default">🌿 默认蓝绿 (Default)</option>
+                        <option value="sakura">🌸 浪漫樱花 (Sakura)</option>
+                        <option value="violet">💜 极光紫罗兰 (Violet)</option>
+                        <option value="forest">🌲 莫兰迪森系 (Forest)</option>
                     </select>
 
                     <label id="pcLangLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🌐 切换语言：</label>
@@ -412,10 +464,10 @@
                 
                 <label id="mbThemeLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🎨 切换主题风格：</label>
                 <select id="themeSelectMobile" class="chat-select" style="margin-top: 6px; margin-bottom: 14px;" onchange="changeTheme(this.value)">
-                    <option value="default">默认蓝绿 (Default)</option>
-                    <option value="sakura">浪漫樱花 (Sakura)</option>
-                    <option value="violet">极光紫罗兰 (Violet)</option>
-                    <option value="forest">莫兰迪森系 (Forest)</option>
+                    <option value="default">🌿 默认蓝绿 (Default)</option>
+                    <option value="sakura">🌸 浪漫樱花 (Sakura)</option>
+                    <option value="violet">💜 极光紫罗兰 (Violet)</option>
+                    <option value="forest">🌲 莫兰迪森系 (Forest)</option>
                 </select>
 
                 <label id="mbLangLabel" style="font-size: 14px; font-weight: bold; color: #64748b;">🌐 切换语言：</label>
@@ -905,6 +957,24 @@
         } catch (err) { alert('Failed: ' + err.message); }
     }
 
+    // 💡 点击好友名字，一键跳转到聊天界面
+    function directToChat(friendId, platformType) {
+        currentPartner = friendId;
+        lastMessageCount = 0;
+
+        // 设置两个平台的下拉选框值
+        document.getElementById('chatSelectPC').value = friendId;
+        document.getElementById('chatSelectMobile').value = friendId;
+
+        // 如果是手机端，自动切到私聊页面
+        if (platformType === 'Mobile' || window.innerWidth < 768) {
+            switchTab('chat');
+        }
+
+        // 刷新消息列表
+        fetchMessages();
+    }
+
     async function fetchFriends() {
         if (!currentUsername) return;
         const lang = localStorage.getItem('user_lang') || 'zh';
@@ -924,14 +994,21 @@
         const listMobile = document.getElementById('friendListMobile');
 
         if (data && data.length > 0) {
-            const itemsHtml = data.map(item => `
+            // PC 端列表渲染
+            listPC.innerHTML = data.map(item => `
                 <div class="friend-item">
-                    <span>👤 <strong>${item.friend_id}</strong></span>
+                    <span class="friend-name-link" onclick="directToChat('${item.friend_id}', 'PC')">👤 <strong>${item.friend_id}</strong></span>
                     <button class="remove-friend-btn" onclick="removeFriend('${item.friend_id}')">×</button>
                 </div>
             `).join('');
-            listPC.innerHTML = itemsHtml;
-            listMobile.innerHTML = itemsHtml;
+
+            // Mobile 端列表渲染
+            listMobile.innerHTML = data.map(item => `
+                <div class="friend-item">
+                    <span class="friend-name-link" onclick="directToChat('${item.friend_id}', 'Mobile')">👤 <strong>${item.friend_id}</strong></span>
+                    <button class="remove-friend-btn" onclick="removeFriend('${item.friend_id}')">×</button>
+                </div>
+            `).join('');
         } else {
             const emptyHtml = `<div style="color:#94a3b8; font-size:13px; text-align:center;">${text.noFriends}</div>`;
             listPC.innerHTML = emptyHtml;
