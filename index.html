@@ -67,7 +67,7 @@
         h2 { margin-top: 0; margin-bottom: 12px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .diary-title { color: #1e293b; }
         .treehole-title { color: #6366f1; }
-        .friend-title { color: #ec4899; margin-top: 20px; }
+        .friend-title { color: #ec4899; }
         .chat-title { color: #8b5cf6; }
         .profile-title { color: #14b8a6; }
 
@@ -88,7 +88,7 @@
         }
         .save-btn { background: #3ecf8e; }
         .whisper-btn { background: #6366f1; }
-        .friend-btn { background: #ec4899; margin-top: 12px; }
+        .friend-btn { background: #ec4899; margin-top: 10px; }
         .profile-btn { background: #14b8a6; margin-top: 12px; }
 
         /* 头像样式 */
@@ -123,12 +123,28 @@
             font-size: 15px; margin-bottom: 12px; outline: none; background: white;
         }
         .chat-box {
-            height: 300px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fcfcfc;
+            height: 280px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fcfcfc;
             padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;
         }
         .msg { max-width: 75%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-all; }
         .msg.me { align-self: flex-end; background: #8b5cf6; color: white; border-bottom-right-radius: 2px; }
         .msg.friend { align-self: flex-start; background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 2px; }
+
+        /* 好友列表样式 */
+        .friend-list {
+            margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 12px;
+            max-height: 160px; overflow-y: auto;
+        }
+        .friend-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px;
+            border: 1px solid #f1f5f9; font-size: 14px;
+        }
+        .remove-friend-btn {
+            background: #fecaca; color: #b91c1c; border: none; padding: 6px 12px;
+            border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: auto;
+        }
+        .remove-friend-btn:hover { background: #fca5a5; }
 
         /* 📱 默认手机端单页布局样式 */
         .pc-layout { display: none; }
@@ -163,6 +179,8 @@
 </head>
 <body>
 
+<audio id="messageTone" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" preload="auto"></audio>
+
 <div id="pageAuth">
     <div class="auth-card">
         <h1>Echo 日记 & 社交</h1>
@@ -195,7 +213,18 @@
 
             <div class="pc-right">
                 <div class="card">
-                    <h2 class="chat-title">💬 好友私聊</h2>
+                    <h2 class="chat-title">💬 好友私聊 & 关注列表</h2>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <input type="text" id="friendInputPC" style="flex:1; padding:10px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box; font-size: 14px;" placeholder="输入对方用户名添加">
+                        <button style="width:auto; padding:10px 14px; background:#ec4899; font-size:14px;" onclick="addFriend('PC')">关注</button>
+                    </div>
+
+                    <div class="friend-list" style="margin-bottom: 12px;">
+                        <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #64748b;">已关注的好友：</div>
+                        <div id="friendListPC">暂无</div>
+                    </div>
+
                     <select id="chatSelectPC" class="chat-select" onchange="switchChatPartner('PC')">
                         <option value="">-- 选择一个好友开始聊天 --</option>
                     </select>
@@ -247,15 +276,6 @@
                     <textarea id="whisperContentPC" placeholder="秘密写在这里，丢进树洞瞬间消失..."></textarea>
                     <button class="whisper-btn" onclick="whisperToTree('PC')">丢进树洞</button>
                 </div>
-
-                <div class="card">
-                    <h2 class="friend-title">👥 好友管理</h2>
-                    <input type="text" id="friendInputPC" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
-                    <button class="friend-btn" onclick="addFriend('PC')">添加好友</button>
-                    <div style="margin-top:12px; font-size:14px; color:#64748b;">
-                        <strong>我的好友：</strong> <span class="myFriendsSpan">暂无</span>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -282,7 +302,18 @@
 
         <div id="pageChat" class="page">
             <div class="card">
-                <h2 class="chat-title">💬 好友私聊</h2>
+                <h2 class="chat-title">💬 好友私聊 & 关注列表</h2>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <input type="text" id="friendInputMobile" style="flex:1; padding:10px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box; font-size: 14px;" placeholder="输入对方用户名添加">
+                    <button style="width:auto; padding:10px 14px; background:#ec4899; font-size:14px;" onclick="addFriend('Mobile')">关注</button>
+                </div>
+
+                <div class="friend-list" style="margin-bottom: 12px;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #64748b;">已关注的好友：</div>
+                    <div id="friendListMobile">暂无</div>
+                </div>
+
                 <select id="chatSelectMobile" class="chat-select" onchange="switchChatPartner('Mobile')">
                     <option value="">-- 选择一个好友开始聊天 --</option>
                 </select>
@@ -301,14 +332,6 @@
                 <h2 class="treehole-title">🍃 情绪树洞</h2>
                 <textarea id="whisperContentMobile" placeholder="吐槽写在这里，丢进树洞瞬间消失..."></textarea>
                 <button class="whisper-btn" onclick="whisperToTree('Mobile')">丢进树洞</button>
-            </div>
-            <div class="card">
-                <h2 class="friend-title">👥 好友管理</h2>
-                <input type="text" id="friendInputMobile" style="width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; box-sizing:border-box;" placeholder="输入好友用户名">
-                <button class="friend-btn" onclick="addFriend('Mobile')">添加好友</button>
-                <div style="margin-top:12px; font-size:14px; color:#64748b;">
-                    <strong>我的关注：</strong> <span class="myFriendsSpan">暂无</span>
-                </div>
             </div>
         </div>
 
@@ -364,6 +387,7 @@
     let currentUsername = localStorage.getItem('chat_username') || '';
     let currentPartner = '';
     let chatTimer = null;
+    let lastMessageCount = 0;
 
     window.onload = function() { checkAuth(); };
 
@@ -380,6 +404,7 @@
             fetchDiaries();
             fetchFriends();
             fetchProfile();
+            startChatPolling(); 
         } else {
             document.getElementById('pageAuth').style.display = 'flex';
             document.getElementById('mainContent').style.display = 'none';
@@ -435,7 +460,6 @@
         }
     }
 
-    // 💡 更新个人资料 & 上传本地头像
     async function updateProfile(type) {
         if (!currentUsername) return;
         const bioInputId = type === 'PC' ? 'bioInputPC' : 'bioInputMobile';
@@ -447,21 +471,17 @@
         try {
             let avatarUrl = null;
 
-            // 检查是否有本地头像文件要上传
             if (fileInput.files && fileInput.files[0]) {
                 const file = fileInput.files[0];
                 const fileName = `${currentUsername}-${Date.now()}.${file.name.split('.').pop()}`;
                 
-                // 上传文件到 avatars 存储桶
                 const { error: uploadError } = await mySupabase.storage.from('avatars').upload(fileName, file);
                 if (uploadError) throw uploadError;
                 
-                // 获取公开下载链接
                 const { data: urlData } = mySupabase.storage.from('avatars').getPublicUrl(fileName);
                 avatarUrl = urlData.publicUrl;
             }
 
-            // 更新到数据库
             let updateData = { bio: newBio };
             if (avatarUrl) {
                 updateData.avatar_url = avatarUrl;
@@ -471,7 +491,7 @@
             if (updateError) throw updateError;
             
             alert('🎉 个人资料已成功保存！');
-            fileInput.value = ''; // 清空选择的文件
+            fileInput.value = '';
             fetchProfile();
             fetchDiaries(); 
         } catch (err) { alert('更新失败：' + err.message); }
@@ -520,7 +540,8 @@
         } else if (tabName === 'chat') {
             document.getElementById('pageChat').classList.add('active');
             document.getElementById('btnNavChat').classList.add('active');
-            startChatPolling();
+            fetchFriends();
+            fetchMessages(); 
         } else if (tabName === 'treehole') {
             document.getElementById('pageTreehole').classList.add('active');
             document.getElementById('btnNavTreehole').classList.add('active');
@@ -533,7 +554,7 @@
 
     function startChatPolling() {
         clearInterval(chatTimer);
-        chatTimer = setInterval(() => { fetchMessages(); }, 2000);
+        chatTimer = setInterval(() => { fetchMessages(true); }, 3000);
     }
 
     async function addFriend(type) {
@@ -548,15 +569,39 @@
             alert(`🎉 已成功关注好友：${friend}`);
             document.getElementById(inputId).value = '';
             fetchFriends();
-        } catch (err) { alert('添加失败。'); }
+            fetchDiaries(); 
+        } catch (err) { alert('添加失败：可能是对方不存在。'); }
+    }
+
+    async function removeFriend(friendId) {
+        if (!currentUsername) return;
+        if (!confirm(`确定要取消关注并删除好友 ${friendId} 吗？`)) return;
+
+        try {
+            const { error } = await mySupabase
+                .from('friendships')
+                .delete()
+                .eq('user_id', currentUsername)
+                .eq('friend_id', friendId);
+
+            if (error) throw error;
+            alert(`👋 已成功删除好友 ${friendId}`);
+            
+            if (currentPartner === friendId) {
+                currentPartner = '';
+                lastMessageCount = 0;
+            }
+
+            fetchFriends();
+            fetchDiaries(); 
+        } catch (err) { alert('删除失败：' + err.message); }
     }
 
     async function fetchFriends() {
         if (!currentUsername) return;
         const { data } = await mySupabase.from('friendships').select('friend_id').eq('user_id', currentUsername);
-        const text = data && data.length > 0 ? data.map(item => item.friend_id).join(', ') : '暂无';
-        document.querySelectorAll('.myFriendsSpan').forEach(span => span.innerText = text);
 
+        // 下拉菜单
         const selectPC = document.getElementById('chatSelectPC');
         const selectMobile = document.getElementById('chatSelectMobile');
         const optionsHtml = `<option value="">-- 选择一个好友开始聊天 --</option>` + 
@@ -564,16 +609,35 @@
 
         selectPC.innerHTML = optionsHtml;
         selectMobile.innerHTML = optionsHtml;
+
+        // 绑定删除按钮的好友列表
+        const listPC = document.getElementById('friendListPC');
+        const listMobile = document.getElementById('friendListMobile');
+
+        if (data && data.length > 0) {
+            const itemsHtml = data.map(item => `
+                <div class="friend-item">
+                    <span>👤 <strong>${item.friend_id}</strong></span>
+                    <button class="remove-friend-btn" onclick="removeFriend('${item.friend_id}')">删除</button>
+                </div>
+            `).join('');
+            listPC.innerHTML = itemsHtml;
+            listMobile.innerHTML = itemsHtml;
+        } else {
+            const emptyHtml = `<div style="color:#94a3b8; font-size:13px; text-align:center;">暂无关注好友</div>`;
+            listPC.innerHTML = emptyHtml;
+            listMobile.innerHTML = emptyHtml;
+        }
     }
 
     function switchChatPartner(type) {
         const selectId = type === 'PC' ? 'chatSelectPC' : 'chatSelectMobile';
         currentPartner = document.getElementById(selectId).value;
+        lastMessageCount = 0; 
         fetchMessages();
-        startChatPolling();
     }
 
-    async function fetchMessages() {
+    async function fetchMessages(isPolling = false) {
         if (!currentUsername || !currentPartner) return;
         try {
             const { data } = await mySupabase
@@ -589,16 +653,34 @@
                     const cls = m.sender === currentUsername ? 'me' : 'friend';
                     return `<div class="msg ${cls}">${m.message}</div>`;
                 }).join('');
+                
                 chatBoxPC.innerHTML = msgHtml;
                 chatBoxMobile.innerHTML = msgHtml;
                 chatBoxPC.scrollTop = chatBoxPC.scrollHeight;
                 chatBoxMobile.scrollTop = chatBoxMobile.scrollHeight;
+
+                if (isPolling && data.length > lastMessageCount) {
+                    const latestMsg = data[data.length - 1];
+                    if (latestMsg.sender === currentPartner) {
+                        playTone();
+                    }
+                }
+                lastMessageCount = data.length; 
             } else {
                 const emptyHtml = `<div style="color:#94a3b8; text-align:center; margin:auto;">没有消息，开始聊点什么吧！</div>`;
                 chatBoxPC.innerHTML = emptyHtml;
                 chatBoxMobile.innerHTML = emptyHtml;
+                lastMessageCount = 0;
             }
         } catch (err) { console.error(err); }
+    }
+
+    function playTone() {
+        const tone = document.getElementById('messageTone');
+        if (tone) {
+            tone.currentTime = 0; 
+            tone.play().catch(err => console.log('音频播放受限，需要页面产生交互：', err));
+        }
     }
 
     async function sendChat(type) {
