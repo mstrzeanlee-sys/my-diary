@@ -28,12 +28,10 @@
             --text-color: #334155;
             --top-bg: #eff6ff;
             --card-border: #bfdbfe;
-            /* 🌿 默认主题植物元素 */
             --plant-top-right: "🌿";
             --plant-bottom-left: "🍀";
         }
 
-        /* 🌸 浪漫樱花主题 */
         [data-theme="sakura"] {
             --bg-color: #fff1f2;
             --primary-color: #f43f5e;
@@ -44,12 +42,10 @@
             --text-color: #4c0519;
             --top-bg: #ffe4e6;
             --card-border: #fecdd3;
-            /* 🌸 樱花主题植物元素 */
             --plant-top-right: "🌸";
             --plant-bottom-left: "💮";
         }
 
-        /* 💜 极光紫罗兰主题 */
         [data-theme="violet"] {
             --bg-color: #f5f3ff;
             --primary-color: #8b5cf6;
@@ -60,12 +56,10 @@
             --text-color: #2e1065;
             --top-bg: #ede9fe;
             --card-border: #ddd6fe;
-            /* 💜 紫色主题植物元素 */
             --plant-top-right: "🔮";
             --plant-bottom-left: "🍇";
         }
 
-        /* 🌲 莫兰迪森系主题 */
         [data-theme="forest"] {
             --bg-color: #f4f7f6;
             --primary-color: #14b8a6;
@@ -76,12 +70,10 @@
             --text-color: #111827;
             --top-bg: #e6f4f1;
             --card-border: #ccebe5;
-            /* 🌲 森系主题植物元素 */
             --plant-top-right: "🌲";
             --plant-bottom-left: "🍃";
         }
 
-        /* 1. 全局基础样式与植物背景装饰 */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg-color); margin: 0; color: var(--text-color); padding-bottom: 80px; 
@@ -91,7 +83,6 @@
             overflow-x: hidden;
         }
 
-        /* 🍃 跟着主题变化的植物浮动背景 */
         body::before, body::after {
             position: fixed;
             font-size: 110px;
@@ -125,7 +116,6 @@
             border-radius: 8px; color: white; border: none; cursor: pointer; font-weight: bold;
         }
 
-        /* 2. 独立登录与注册页面 */
         #pageAuth {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh; padding: 20px; box-sizing: border-box; background: #f1f5f9;
@@ -136,7 +126,6 @@
             width: 100%; max-width: 380px; text-align: center; box-sizing: border-box;
             position: relative; overflow: hidden;
         }
-        /* 登录页植物点缀 */
         .auth-card::before {
             content: "🌱"; position: absolute; top: -10px; left: -10px; font-size: 40px; opacity: 0.15;
         }
@@ -149,11 +138,9 @@
             border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
         }
 
-        /* 3. 主功能区域（登录后展示） */
         #mainContent { display: none; }
         .content-area { padding: 16px; max-width: 900px; margin: 0 auto; box-sizing: border-box; }
 
-        /* 通用卡片加上植物装饰细节 */
         .card { 
             background: white; padding: 24px; border-radius: 16px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -189,11 +176,9 @@
         .friend-btn { background: var(--friend-color); margin-top: 10px; }
         .profile-btn { background: var(--profile-color); margin-top: 12px; }
 
-        /* 头像样式 */
         .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e2e8f0; }
         .avatar-large { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: #e2e8f0; margin-bottom: 10px; border: 2px solid #cbd5e1; }
 
-        /* 日记列表样式 */
         .diary-item { 
             background: white; padding: 18px; border-radius: 16px; margin-bottom: 14px; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); position: relative;
@@ -215,7 +200,6 @@
         }
         .like-btn.liked { color: #f43f5e; font-weight: bold; background: #fff1f2; }
 
-        /* 💬 聊天专区专属样式 */
         .chat-select {
             width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1;
             font-size: 15px; margin-bottom: 12px; outline: none; background: white;
@@ -228,22 +212,25 @@
         .msg.me { align-self: flex-end; background: var(--chat-color); color: white; border-bottom-right-radius: 2px; }
         .msg.friend { align-self: flex-start; background: #e2e8f0; color: #1e293b; border-bottom-left-radius: 2px; }
 
-        /* 好友列表样式 */
         .friend-list {
             margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 12px;
             max-height: 160px; overflow-y: auto;
         }
         .friend-item {
             display: flex; justify-content: space-between; align-items: center;
-            background: #f8fafc; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px;
+            background: #f8fafc; padding: 10px 12px; border-radius: 10px; margin-bottom: 8px;
             border: 1px solid #f1f5f9; font-size: 14px;
         }
-        /* 可点击的名字样式 */
+        /* 📱 手机端专属：好友名字变为高亮可点击区域 */
         .friend-name-link {
-            cursor: pointer; color: var(--text-color); font-weight: bold; padding: 4px 0; display: inline-flex; align-items: center; gap: 4px;
+            cursor: pointer; color: var(--text-color); font-weight: bold; 
+            padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px;
+            user-select: none; -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+            border-radius: 8px; transition: background 0.2s ease;
         }
-        .friend-name-link:hover {
-            color: var(--primary-color); text-decoration: underline;
+        .friend-name-link:active {
+            background-color: #e2e8f0;
+            transform: scale(0.98);
         }
         .remove-friend-btn {
             background: #fecaca; color: #b91c1c; border: none; padding: 6px 12px;
@@ -251,7 +238,6 @@
         }
         .remove-friend-btn:hover { background: #fca5a5; }
 
-        /* 📱 默认手机端单页布局样式 */
         .pc-layout { display: none; }
         .page { display: none; }
         .page.active { display: block; }
@@ -268,7 +254,6 @@
         .nav-item .icon { font-size: 18px; margin-bottom: 2px; }
         .nav-item.active { color: var(--primary-color); font-weight: bold; }
 
-        /* 💻 电脑端自适应布局样式 */
         @media (min-width: 768px) {
             body { padding-bottom: 20px; }
             .bottom-nav { display: none; }
@@ -289,7 +274,7 @@
 <div id="pageAuth">
     <div class="auth-card">
         <h1 id="authTitle">Echo 日记 & 社交</h1>
-        <p id="authNotice" style="color: #64748b; font-size: 14px; margin-bottom: 20px;">新用户输入密码即可直接完成注册</p>
+        <p id="authNotice">新用户输入密码即可直接完成注册</p>
         <input type="text" id="usernameInput" class="auth-input" placeholder="输入用户名">
         <input type="password" id="passwordInput" class="auth-input" placeholder="输入你的密码">
         <button id="authBtn" class="auth-btn" onclick="handleAuth()">登 录 / 注 册</button>
@@ -522,7 +507,6 @@
     let chatTimer = null;
     let lastMessageCount = 0;
 
-    // ================= 多语言文本字典 =================
     const i18n = {
         zh: {
             authTitle: "Echo 日记 & 社交",
@@ -620,26 +604,20 @@
         checkAuth(); 
     };
 
-    // 🌐 多语言功能：切换语言
     function changeLang(langCode) {
         localStorage.setItem('user_lang', langCode);
         document.getElementById('langSelectPC').value = langCode;
         document.getElementById('langSelectMobile').value = langCode;
-
         const text = i18n[langCode];
 
-        // 登录页翻译
         document.getElementById('authTitle').innerText = text.authTitle;
         document.getElementById('authNotice').innerText = text.authNotice;
         document.getElementById('usernameInput').placeholder = text.userPlaceholder;
         document.getElementById('passwordInput').placeholder = text.pwdPlaceholder;
         document.getElementById('authBtn').innerText = text.authBtn;
         document.getElementById('authTip').innerText = text.authTip;
-
-        // 公用顶栏
         document.getElementById('logoutBtn').innerText = text.logout;
 
-        // 电脑端内容翻译
         document.getElementById('pcDiaryHeader').innerText = text.diariesHeader;
         document.getElementById('pcChatHeader').innerText = text.chatHeader;
         document.getElementById('pcFollowBtn').innerText = text.follow;
@@ -665,7 +643,6 @@
         document.getElementById('whisperContentPC').placeholder = text.treePlaceholder;
         document.getElementById('pcTreeBtn').innerText = text.throwToTree;
 
-        // 手机端内容翻译
         document.getElementById('mbDiaryHeader').innerText = text.diariesHeader;
         document.getElementById('mbWriteHeader').innerText = text.writeHeader;
         document.getElementById('diaryContentMobile').placeholder = text.diaryPlaceholder;
@@ -691,14 +668,12 @@
         document.getElementById('newPwdInputMobile').placeholder = text.newPwdPlaceholder;
         document.getElementById('mbSavePwdBtn').innerText = text.savePwd;
 
-        // 手机端底部导航翻译
         document.getElementById('navTextDiaries').innerText = text.navDiaries;
         document.getElementById('navTextWrite').innerText = text.navWrite;
-        document.getElementById('navTextChat').innerText = text.navChat;
+        document.getElementById('navTextChat').innerText = text.navTextChat;
         document.getElementById('navTextTreehole').innerText = text.navTreehole;
         document.getElementById('navTextProfile').innerText = text.navProfile;
 
-        // 动态刷新数据文案
         fetchFriends();
         fetchDiaries();
     }
@@ -708,7 +683,6 @@
         changeLang(savedLang);
     }
 
-    // 🎨 主题切换
     function changeTheme(themeName) {
         if (themeName === 'default') {
             document.documentElement.removeAttribute('data-theme');
@@ -716,7 +690,6 @@
             document.documentElement.setAttribute('data-theme', themeName);
         }
         localStorage.setItem('user_theme', themeName);
-        
         document.getElementById('themeSelectPC').value = themeName;
         document.getElementById('themeSelectMobile').value = themeName;
     }
@@ -732,7 +705,6 @@
             document.getElementById('mainContent').style.display = 'block';
             document.querySelector('.top-status').style.display = 'flex';
             document.getElementById('currentUserDisplay').innerText = currentUsername;
-            
             document.getElementById('profileUserPC').innerText = currentUsername;
             document.getElementById('profileUserMobile').innerText = currentUsername;
 
@@ -799,20 +771,16 @@
         if (!currentUsername) return;
         const bioInputId = type === 'PC' ? 'bioInputPC' : 'bioInputMobile';
         const fileInputId = type === 'PC' ? 'avatarFileInputPC' : 'avatarFileInputMobile';
-        
         const newBio = document.getElementById(bioInputId).value.trim();
         const fileInput = document.getElementById(fileInputId);
         
         try {
             let avatarUrl = null;
-
             if (fileInput.files && fileInput.files[0]) {
                 const file = fileInput.files[0];
                 const fileName = `${currentUsername}-${Date.now()}.${file.name.split('.').pop()}`;
-                
                 const { error: uploadError } = await mySupabase.storage.from('avatars').upload(fileName, file);
                 if (uploadError) throw uploadError;
-                
                 const { data: urlData } = mySupabase.storage.from('avatars').getPublicUrl(fileName);
                 avatarUrl = urlData.publicUrl;
             }
@@ -906,17 +874,12 @@
                 .from('users').select('username').eq('username', friend).maybeSingle();
 
             if (checkError) throw checkError;
-
-            if (!targetUser) {
-                return alert(`❌ User "${friend}" not found!`);
-            }
+            if (!targetUser) return alert(`❌ User "${friend}" not found!`);
 
             const { data: alreadyFriend } = await mySupabase
                 .from('friendships').select('*').eq('user_id', currentUsername).eq('friend_id', friend).maybeSingle();
 
-            if (alreadyFriend) {
-                return alert('💡 Already added!');
-            }
+            if (alreadyFriend) return alert('💡 Already added!');
 
             const { error: insertError } = await mySupabase
                 .from('friendships').insert([{ user_id: currentUsername, friend_id: friend }]);
@@ -927,9 +890,7 @@
             document.getElementById(inputId).value = '';
             fetchFriends();
             fetchDiaries(); 
-        } catch (err) { 
-            alert('Failed: ' + err.message); 
-        }
+        } catch (err) { alert('Failed: ' + err.message); }
     }
 
     async function removeFriend(friendId) {
@@ -938,40 +899,33 @@
         if (!confirm(i18n[lang].confirmDelFriend)) return;
 
         try {
-            const { error } = await mySupabase
-                .from('friendships')
-                .delete()
-                .eq('user_id', currentUsername)
-                .eq('friend_id', friendId);
-
+            const { error } = await mySupabase.from('friendships').delete().eq('user_id', currentUsername).eq('friend_id', friendId);
             if (error) throw error;
             alert(`👋 Removed: ${friendId}`);
-            
             if (currentPartner === friendId) {
                 currentPartner = '';
                 lastMessageCount = 0;
             }
-
             fetchFriends();
             fetchDiaries(); 
         } catch (err) { alert('Failed: ' + err.message); }
     }
 
-    // 💡 点击好友名字，一键跳转到聊天界面
+    // 💡 重点改进函数：点击直接跳转并载入聊天
     function directToChat(friendId, platformType) {
         currentPartner = friendId;
         lastMessageCount = 0;
 
-        // 设置两个平台的下拉选框值
+        // 无论如何先更新一下两个下拉框的选中值
         document.getElementById('chatSelectPC').value = friendId;
         document.getElementById('chatSelectMobile').value = friendId;
 
-        // 如果是手机端，自动切到私聊页面
+        // 如果是手机端（或者窗口较窄），强制路由到聊天标签页
         if (platformType === 'Mobile' || window.innerWidth < 768) {
             switchTab('chat');
         }
 
-        // 刷新消息列表
+        // 立即拉取并渲染聊天记录
         fetchMessages();
     }
 
@@ -994,7 +948,7 @@
         const listMobile = document.getElementById('friendListMobile');
 
         if (data && data.length > 0) {
-            // PC 端列表渲染
+            // PC 列表
             listPC.innerHTML = data.map(item => `
                 <div class="friend-item">
                     <span class="friend-name-link" onclick="directToChat('${item.friend_id}', 'PC')">👤 <strong>${item.friend_id}</strong></span>
@@ -1002,7 +956,7 @@
                 </div>
             `).join('');
 
-            // Mobile 端列表渲染
+            // Mobile 列表：点击名字会触发 directToChat，自动切页并开始聊天
             listMobile.innerHTML = data.map(item => `
                 <div class="friend-item">
                     <span class="friend-name-link" onclick="directToChat('${item.friend_id}', 'Mobile')">👤 <strong>${item.friend_id}</strong></span>
